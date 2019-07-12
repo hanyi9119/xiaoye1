@@ -521,7 +521,7 @@ Update_Shell(){
 check_sys
 [[ ${release} != "debian" ]] && [[ ${release} != "ubuntu" ]] && echo -e "${Error} 本脚本不支持当前系统 ${release} !" && exit 1
 echo && echo -e " ocserv 小野一键脚本 ${Red_font_prefix}[v${sh_ver}]${Font_color_suffix}
-  -- xiaoye | 致敬doub.io/vpnzy-7 --
+  -- xiaoye | love china --
   
  ${Green_font_prefix}0.${Font_color_suffix} 升级脚本
 ————————————
