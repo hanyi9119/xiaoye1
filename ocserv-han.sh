@@ -58,7 +58,7 @@ Get_ip(){
 	fi
 }
 Set_latest_new_version(){
-	echo -e "请输入 要下载安装的 ocserv 版本 [ 格式: x.xx.x ，例如: 0.12.6 或 1.1.15 ]
+	echo -e "请输入 要下载安装的 ocserv 版本 [ 格式: x.xx.x ，例如: 0.12.6 或 1.1.6 ]
 ${Tip} ocserv 版本列表请去这里获取：[ ftp://ftp.infradead.org/pub/ocserv/ ]"
 	stty erase '^H' && read -p "(默认回车，自动获取最新版本):" ocserv_ver
 	[[ -z "${ocserv_ver}" ]] && check_new_ver
