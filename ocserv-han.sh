@@ -58,7 +58,7 @@ Get_ip(){
 	fi
 }
 Set_latest_new_version(){
-	echo -e "请输入 要下载安装的 ocserv 版本 [ 格式: x.xx.x ，例如: 0.12.6 或 1.1.6 ]
+	echo -e "请输入 要下载安装的 ocserv 版本 [ 格式: x.xx.x ，例如: 0.12.6 或 1.2.4 ]
 ${Tip} ocserv 版本列表请去这里获取：[ ftp://ftp.infradead.org/pub/ocserv/ ]"
 	stty erase '^H' && read -p "(默认回车，自动获取最新版本):" ocserv_ver
 	[[ -z "${ocserv_ver}" ]] && check_new_ver
@@ -69,7 +69,7 @@ check_new_ver(){
 	ocserv_ver=$(wget -qO- -t1 -T2 ftp://ftp.infradead.org/pub/ocserv/|grep File|grep -v '.sig'|awk '{print $(NF-2)}'|sed -r 's/.*tar\.xz\">ocserv-(.+)\.tar\.xz<\/a>.*/\1/'|grep -E '[0-9].[0-9].[0-9]'|sort -V | tail -1)
 	if [[ -z ${ocserv_ver} ]]; then
 		echo -e "${Error} ocserv 最新版本获取失败，请手动获取最新版本号[ ftp://ftp.infradead.org/pub/ocserv/ ]"
-		stty erase '^H' && read -p "请输入版本号 [ 格式如 0.12.6 或 1.1.15 ] :" ocserv_ver
+		stty erase '^H' && read -p "请输入版本号 [ 格式如 0.12.6 或 1.2.4 ] :" ocserv_ver
 		[[ -z "${ocserv_ver}" ]] && echo "取消..." && exit 1
 	else
 		echo -e "${Info} 检测到 ocserv 最新版本为 [ ${ocserv_ver} ]"
