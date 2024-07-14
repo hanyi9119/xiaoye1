@@ -1,71 +1,71 @@
 #!/bin/bash
 
-# ¼ì²éÊÇ·ñÌá¹©ÁË×ã¹»µÄ²ÎÊı
+# æ£€æŸ¥æ˜¯å¦æä¾›äº†è¶³å¤Ÿçš„å‚æ•°
 if [ "$#" -ne 2 ]; then
     echo "Usage: $0 <interface_name> <traffic_limit>"
     exit 1
 fi
 
-# ²ÎÊı
+# å‚æ•°
 interface_name=$1
 traffic_limit=$2
 
-# ¸üĞÂ°üÁĞ±í²¢°²×°cron·şÎñ
+# æ›´æ–°åŒ…åˆ—è¡¨å¹¶å®‰è£…cronæœåŠ¡
 sudo apt update
 sudo apt install cron -y
 
-# °²×°ÒÀÀµ
+# å®‰è£…ä¾èµ–
 sudo apt install vnstat bc -y
 
-# ÅäÖÃvnstat
+# é…ç½®vnstat
 sudo sed -i '0,/^;Interface ""/s//Interface '\"$interface_name\"'/' /etc/vnstat.conf
 sudo sed -i "0,/^;UnitMode.*/s//UnitMode 1/" /etc/vnstat.conf
 sudo sed -i "0,/^;MonthRotate.*/s//MonthRotate 1/" /etc/vnstat.conf
 
-# ÖØÆôvnstat·şÎñ
+# å¯ç”¨å¹¶å¯åŠ¨vnstatæœåŠ¡
 sudo systemctl enable vnstat
 sudo systemctl restart vnstat
 
-# ´´½¨×Ô¶¯¹Ø»ú½Å±¾check.sh
-cat << EOF | sudo tee /root/check.sh > /dev/null
+# åˆ›å»ºè‡ªåŠ¨å…³æœºè„šæœ¬check.sh
+cat << 'EOF' | sudo tee /root/check.sh > /dev/null
 #!/bin/bash
 
-# Íø¿¨Ãû³Æ
+# ç½‘å¡åç§°
 interface_name="$interface_name"
-# Á÷Á¿ãĞÖµÉÏÏŞ£¨ÒÔGBÎªµ¥Î»£©
+# æµé‡é˜ˆå€¼ä¸Šé™ï¼ˆä»¥GBä¸ºå•ä½ï¼‰
 traffic_limit=$traffic_limit
 
-# ¸üĞÂÍø¿¨¼ÇÂ¼
+# æ›´æ–°ç½‘å¡è®°å½•
 vnstat -i "$interface_name"
 
-# »ñÈ¡Ã¿ÔÂÓÃÁ¿£¬\$11: ½øÕ¾+³öÕ¾Á÷Á¿; \$10: ³öÕ¾Á÷Á¿; \$9: ½øÕ¾Á÷Á¿
-TRAFF_USED=\$(vnstat --oneline b | awk -F';' '{print \$11}')
+# è·å–æ¯æœˆç”¨é‡ï¼Œ$11: è¿›ç«™+å‡ºç«™æµé‡; $10: å‡ºç«™æµé‡; $9: è¿›ç«™æµé‡
+TRAFF_USED=$(vnstat --oneline b | awk -F';' '{print $11}')
 
-# ¼ì²éÊÇ·ñ»ñÈ¡µ½Êı¾İ
-if [[ -z "\$TRAFF_USED" ]]; then
+# æ£€æŸ¥æ˜¯å¦è·å–åˆ°æ•°æ®
+if [[ -z "$TRAFF_USED" ]]; then
     echo "Error: Not enough data available yet."
     exit 1
 fi
 
-# ½«Á÷Á¿×ª»»ÎªGB
-CHANGE_TO_GB=\$(echo "scale=2; \$TRAFF_USED / 1073741824" | bc)
+# å°†æµé‡è½¬æ¢ä¸ºGB
+CHANGE_TO_GB=$(echo "scale=2; $TRAFF_USED / 1073741824" | bc)
 
-# ¼ì²é×ª»»ºóµÄÁ÷Á¿ÊÇ·ñÎªÓĞĞ§Êı×Ö
-if ! [[ "\$CHANGE_TO_GB" =~ ^[0-9]+([.][0-9]+)?\$ ]]; then
+# æ£€æŸ¥è½¬æ¢åçš„æµé‡æ˜¯å¦ä¸ºæœ‰æ•ˆæ•°å­—
+if ! [[ "$CHANGE_TO_GB" =~ ^[0-9]+([.][0-9]+)?$ ]]; then
     echo "Error: Invalid traffic data."
     exit 1
 fi
 
-# ±È½ÏÁ÷Á¿ÊÇ·ñ³¬¹ıãĞÖµ
-if (( \$(echo "\$CHANGE_TO_GB > \$traffic_limit" | bc -l) )); then
+# æ¯”è¾ƒæµé‡æ˜¯å¦è¶…è¿‡é˜ˆå€¼
+if (( $(echo "$CHANGE_TO_GB > $traffic_limit" | bc -l) )); then
     sudo /usr/sbin/shutdown -h now
 fi
 EOF
 
-# ÊÚÓèÈ¨ÏŞ
+# æˆäºˆæƒé™
 sudo chmod +x /root/check.sh
 
-# ÉèÖÃ¶¨Ê±ÈÎÎñ£¬Ã¿5·ÖÖÓÖ´ĞĞÒ»´Î¼ì²é
+# è®¾ç½®å®šæ—¶ä»»åŠ¡ï¼Œæ¯3åˆ†é’Ÿæ‰§è¡Œä¸€æ¬¡æ£€æŸ¥
 (crontab -l ; echo "*/3 * * * * /bin/bash /root/check.sh > /root/shutdown_debug.log 2>&1") | crontab -
 
-echo "´ó¹¦¸æ³É£¡½Å±¾ÒÑ°²×°²¢ÅäÖÃÍê³É¡£"
+echo "å¤§åŠŸå‘Šæˆï¼è„šæœ¬å·²å®‰è£…å¹¶é…ç½®å®Œæˆã€‚"
