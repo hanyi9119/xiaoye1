@@ -1,14 +1,16 @@
 #!/bin/bash
 
-# 检查是否提供了足够的参数
-if [ "$#" -ne 2 ]; then
-    echo "Usage: $0 <interface_name> <traffic_limit>"
+# 自动获取第一个活动的网络接口名称
+interface_name=$(route | grep default | sed -e 's/.* //' -e 's/:.*//' -e 's/\.[0-9]*$//')
+
+# 检查流量限制参数是否提供
+if [ -z "$1" ]; then
+    echo "Usage: $0 <traffic_limit>"
     exit 1
 fi
 
 # 参数
-interface_name=$1
-traffic_limit=$2
+traffic_limit=$1
 
 # 更新包列表并安装cron服务
 sudo apt update
@@ -17,8 +19,8 @@ sudo apt install cron -y
 # 安装依赖
 sudo apt install vnstat bc -y
 
-# 配置vnstat
-sudo sed -i '0,/^;Interface ""/s//Interface '\"$interface_name\"'/' /etc/vnstat.conf
+# 配置vnstat，使用自动获取的网络接口名称
+sudo sed -i "0,/^;Interface.*/s//Interface $interface_name/" /etc/vnstat.conf
 sudo sed -i "0,/^;UnitMode.*/s//UnitMode 1/" /etc/vnstat.conf
 sudo sed -i "0,/^;MonthRotate.*/s//MonthRotate 1/" /etc/vnstat.conf
 
@@ -30,15 +32,14 @@ sudo systemctl restart vnstat
 cat << EOF | sudo tee /root/check.sh > /dev/null
 #!/bin/bash
 
-# 网卡名称
+# 使用的环境变量
 interface_name="$interface_name"
-# 流量阈值上限（以GB为单位）
-traffic_limit=$traffic_limit
+traffic_limit=\$1
 
 # 更新网卡记录
-vnstat -i "$interface_name"
+vnstat -i "\$interface_name"
 
-# 获取每月用量，\$11: 进站+出站流量; \$10: 出站流量; \$9: 进站流量
+# 获取每月用量
 TRAFF_USED=\$(vnstat --oneline b | awk -F';' '{print \$11}')
 
 # 检查是否获取到数据
@@ -66,6 +67,6 @@ EOF
 sudo chmod +x /root/check.sh
 
 # 设置定时任务，每5分钟执行一次检查
-(crontab -l ; echo "*/3 * * * * /bin/bash /root/check.sh > /root/shutdown_debug.log 2>&1") | crontab -
+(crontab -l ; echo "*/3 * * * * /bin/bash /root/check.sh \$traffic_limit > /root/shutdown_debug.log 2>&1") | crontab -
 
 echo "大功告成！脚本已安装并配置完成。"
