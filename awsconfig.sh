@@ -23,6 +23,7 @@ sudo sed -i "0,/^;UnitMode.*/s//UnitMode 1/" /etc/vnstat.conf
 sudo sed -i "0,/^;MonthRotate.*/s//MonthRotate 1/" /etc/vnstat.conf
 
 # 重启vnstat服务
+sudo systemctl enable vnstat
 sudo systemctl restart vnstat
 
 # 创建自动关机脚本check.sh
