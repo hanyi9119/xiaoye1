@@ -11,6 +11,7 @@ fi
 
 # 参数
 traffic_limit=$1
+echo $traffic_limit > /root/traffic_limit.txt
 
 # 更新包列表并安装cron服务
 sudo apt update
@@ -34,7 +35,7 @@ cat << EOF | sudo tee /root/check.sh > /dev/null
 
 # 使用的环境变量
 interface_name="$interface_name"
-traffic_limit=\$1
+traffic_limit=$(cat /root/traffic_limit.txt)
 
 # 更新网卡记录
 vnstat -i "\$interface_name"
