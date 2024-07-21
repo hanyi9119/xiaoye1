@@ -68,6 +68,6 @@ EOF
 sudo chmod +x /root/check.sh
 
 # 设置定时任务，每5分钟执行一次检查
-(crontab -l ; echo "*/3 * * * * /bin/bash /root/check.sh \$traffic_limit > /root/shutdown_debug.log 2>&1") | crontab -
+(crontab -l ; echo "*/5 * * * * /bin/bash /root/check.sh \$traffic_limit > /root/shutdown_debug.log 2>&1") | crontab -
 
 echo "大功告成！脚本已安装并配置完成。"
