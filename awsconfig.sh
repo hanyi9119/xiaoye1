@@ -1,5 +1,11 @@
 #!/bin/bash
 
+# 确保脚本以 root 权限运行
+if [ "$(id -u)" != "0" ]; then
+   echo "该脚本必须以 root 权限运行" 1>&2
+   exit 1
+fi
+
 # 自动获取第一个活动的网络接口名称
 interface_name=$(route | grep default | sed -e 's/.* //' -e 's/:.*//' -e 's/\.[0-9]*$//')
 
