@@ -10,7 +10,7 @@ fi
 interface_name=$(route | grep default | sed -e 's/.* //' -e 's/:.*//' -e 's/\.[0-9]*$//')
 
 #创建文件夹
-mkdir -p /root/awsconfig/
+sudo mkdir -p /root/awsconfig/
 
 # 检查流量限制参数是否提供
 if [ -z "$1" ]; then
