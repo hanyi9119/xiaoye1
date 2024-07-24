@@ -34,7 +34,7 @@ cat << EOF | sudo tee /root/check.sh > /dev/null
 #!/bin/bash
 
 # 使用的环境变量
-interface_name="$interface_name"
+interface_name=\$(route | grep default | sed -e 's/.* //' -e 's/:.*//' -e 's/\.[0-9]*$//')
 traffic_limit=\$(cat /root/traffic_limit.txt)
 
 # 更新网卡记录
