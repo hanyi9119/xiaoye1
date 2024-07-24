@@ -3,6 +3,9 @@
 # 自动获取第一个活动的网络接口名称
 interface_name=$(route | grep default | sed -e 's/.* //' -e 's/:.*//' -e 's/\.[0-9]*$//')
 
+#创建文件夹
+mkdir -p /root/awsconfig/
+
 # 检查流量限制参数是否提供
 if [ -z "$1" ]; then
     echo "Usage: $0 <traffic_limit>"
