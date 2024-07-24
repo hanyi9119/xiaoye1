@@ -11,7 +11,7 @@ fi
 
 # 参数
 traffic_limit=$1
-echo $traffic_limit > /root/traffic_limit.txt
+echo $traffic_limit > /root/awsconfig/traffic_limit.txt
 
 # 更新包列表并安装cron服务
 sudo apt update
@@ -30,12 +30,12 @@ sudo systemctl enable vnstat
 sudo systemctl restart vnstat
 
 # 创建自动关机脚本check.sh
-cat << EOF | sudo tee /root/check.sh > /dev/null
+cat << EOF | sudo tee /root/awsconfig/check.sh > /dev/null
 #!/bin/bash
 
 # 使用的环境变量
-interface_name=\$(route | grep default | sed -e 's/.* //' -e 's/:.*//' -e 's/\.[0-9]*$//')
-traffic_limit=\$(cat /root/traffic_limit.txt)
+interface_name="$interface_name"
+traffic_limit=\$(cat /root/awsconfig/traffic_limit.txt)
 
 # 更新网卡记录
 vnstat -i "\$interface_name"
@@ -65,9 +65,9 @@ fi
 EOF
 
 # 授予权限
-sudo chmod +x /root/check.sh
+sudo chmod +x /root/awsconfig/check.sh
 
 # 设置定时任务，每5分钟执行一次检查
-(crontab -l ; echo "*/3 * * * * /bin/bash /root/check.sh \$traffic_limit > /root/shutdown_debug.log 2>&1") | crontab -
+(crontab -l ; echo "*/3 * * * * /bin/bash /root/awsconfig/check.sh \$traffic_limit > /root/awsconfig/shutdown_debug.log 2>&1") | crontab -
 
 echo "大功告成！脚本已安装并配置完成。"
