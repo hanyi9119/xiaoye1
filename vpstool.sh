@@ -26,4 +26,5 @@ echo "开启防止SYN洪泛攻击"
 sudo iptables -A INPUT -p tcp --tcp-flags ALL NONE -j DROP
 sudo iptables -A INPUT -p tcp --tcp-flags ALL ALL -j DROP
 echo "开启防止端口扫描"
+sudo iptables -L
 echo "所有基本攻击缓解规则已应用完成"
