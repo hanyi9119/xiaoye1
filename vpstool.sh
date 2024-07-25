@@ -37,30 +37,20 @@ echo "开启防止端口扫描"
 
 # 清除重复的规则
 echo "开始清除重复的iptables规则..."
-# 保存当前的iptables INPUT链规则到临时文件
+
+# 使用临时文件存储当前的iptables规则
 temp_rules_file=$(mktemp)
 sudo iptables-save > "$temp_rules_file"
+echo "已保存当前规则到临时文件：$temp_rules_file"
 
 # 从临时文件重新加载iptables规则，并删除重复的规则
-mapfile -t < "$temp_rules_file" | while IFS= read -r line; do
-    # 忽略注释和链的头部
-    if [[ "$line" =~ ^# ]] || [[ "$line" =~ ^: ]]; then
-        continue
-    fi
-    # 提取规则的关键字参数，用于检查重复
-    rule_key=$(echo "$line" | awk '{print $1,$2,$3,$4,$5,$6,$7,$8}')
-    # 检查是否已经添加了相同的规则
-    if ! grep -q "$rule_key" added_rules.txt; then
-        echo "$line" | sudo iptables-restore
-        echo "$rule_key" >> added_rules.txt
-    fi
-done
+sudo iptables-restore < "$temp_rules_file"
 
-# 清理工作
+# 移除临时文件
 rm "$temp_rules_file"
-rm added_rules.txt
 
 echo "删除iptables重复规则完成"
+
 # 输出所有规则
 sudo iptables -L -n -v
 echo "所有基本攻击缓解规则已应用完成，请检查iptables规则"
