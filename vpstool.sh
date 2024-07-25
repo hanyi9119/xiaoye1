@@ -10,7 +10,7 @@ if [ -z "$SSH_PORT" ]; then
 fi
 
 echo "SSH端口号为：$SSH_PORT"
-echo "开始通过iptables进行基本的攻击缓解..."
+echo "开始通过iptables进行基本的攻击缓解设置..."
 
 # 限制SSH连接次数
 sudo iptables -A INPUT -p tcp --dport "$SSH_PORT" -m state --state NEW -m recent --set
@@ -27,4 +27,4 @@ sudo iptables -A INPUT -p tcp --tcp-flags ALL NONE -j DROP
 sudo iptables -A INPUT -p tcp --tcp-flags ALL ALL -j DROP
 echo "开启防止端口扫描"
 sudo iptables -L
-echo "所有基本攻击缓解规则已应用完成"
+echo "所有基本攻击缓解规则已应用完成，请检查iptables 规则"
