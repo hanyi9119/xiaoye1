@@ -33,5 +33,27 @@ echo "开启防止SYN洪泛攻击"
 sudo iptables -A INPUT -p tcp --tcp-flags ALL NONE -j DROP
 sudo iptables -A INPUT -p tcp --tcp-flags ALL ALL -j DROP
 echo "开启防止端口扫描"
+
+#清除重复的规则
+# 将 INPUT 链的规则保存到数组中
+rules=($(iptables -L INPUT --line-numbers -n | grep -v "Chain"))
+# 用于检测重复规则的数组
+duplicates=()
+# 检测重复规则
+for i in ${!rules[@]}; do
+    for j in ${!rules[@]}; do
+        if [ $i -ne $j ] && [ "${rules[$i]}" = "${rules[$j]}" ]; then
+            duplicates+=($(($i + 1))) # 保存行号（iptables -L 的输出中是 0 开始的，所以这里要加 1）
+        fi
+    done
+done
+# 删除重复规则
+for rule in ${duplicates[@]}; do
+    sudo iptables -D INPUT $rule
+done
+# 重新加载规则以确保它们被删除
+sudo iptables -t filter -L INPUT -n -v
+
+#输出所有规则
 sudo iptables -L
 echo "所有基本攻击缓解规则已应用完成，请检查iptables 规则"
