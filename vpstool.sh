@@ -15,15 +15,15 @@ echo "开始通过iptables进行基本的攻击缓解..."
 # 限制SSH连接次数
 sudo iptables -A INPUT -p tcp --dport "$SSH_PORT" -m state --state NEW -m recent --set
 sudo iptables -A INPUT -p tcp --dport "$SSH_PORT" -m state --state NEW -m recent --update --seconds 60 --hitcount 10 -j DROP
-
+echo "SSH连接次数被限制为60秒内10次"
 # 丢弃ping请求
 sudo iptables -A INPUT -p icmp --icmp-type echo-request -j DROP
-
+echo "丢弃所有的ping请求"
 # 防止SYN洪泛攻击
 sudo iptables -A INPUT -p tcp ! --syn -m state --state NEW -j DROP
-
+echo "开启防止SYN洪泛攻击"
 # 防止端口扫描
 sudo iptables -A INPUT -p tcp --tcp-flags ALL NONE -j DROP
 sudo iptables -A INPUT -p tcp --tcp-flags ALL ALL -j DROP
-
-echo "基本攻击缓解规则已应用"
+echo "开启防止端口扫描"
+echo "所有基本攻击缓解规则已应用完成"
