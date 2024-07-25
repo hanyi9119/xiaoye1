@@ -51,6 +51,7 @@ done
 for rule in ${duplicates[@]}; do
     sudo iptables -D INPUT $rule
 done
+echo "删除iptables重复规则"
 # 重新加载规则以确保它们被删除
 sudo iptables -t filter -L INPUT -n -v
 
