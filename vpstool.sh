@@ -1,4 +1,11 @@
 #!/bin/bash
+
+# 检查用户是否是root用户
+if [[ $EUID -ne 0 ]]; then
+   echo "此脚本必须以root身份运行" 
+   exit 1
+fi
+
 # 通过iptables进行基本的攻击缓解
 
 # 获取SSH端口号
