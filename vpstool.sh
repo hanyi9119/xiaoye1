@@ -6,8 +6,6 @@ if [[ $EUID -ne 0 ]]; then
    exit 1
 fi
 
-# 通过iptables进行基本的攻击缓解
-
 # 获取SSH端口号
 SSH_PORT=$(sudo grep -i "^Port" /etc/ssh/sshd_config | awk '{print $2}' | head -1)
 if [ -z "$SSH_PORT" ]; then
@@ -18,38 +16,38 @@ echo "SSH端口号为：$SSH_PORT"
 echo "开始通过iptables进行基本的攻击缓解设置..."
 
 # 限制SSH连接次数
-sudo iptables -A INPUT -p tcp --dport "$SSH_PORT" -m state --state NEW -m recent --set
-sudo iptables -A INPUT -p tcp --dport "$SSH_PORT" -m state --state NEW -m recent --update --seconds 60 --hitcount 10 -j DROP
-echo "SSH连接次数被限制为60秒内10次"
+if ! sudo iptables -C INPUT -p tcp --dport "$SSH_PORT" -m state --state NEW -m recent --set 2>/dev/null; then
+    sudo iptables -A INPUT -p tcp --dport "$SSH_PORT" -m state --state NEW -m recent --set
+    echo "已添加规则：限制SSH连接次数"
+fi
+
+if ! sudo iptables -C INPUT -p tcp --dport "$SSH_PORT" -m state --state NEW -m recent --update --seconds 60 --hitcount 10 -j DROP 2>/dev/null; then
+    sudo iptables -A INPUT -p tcp --dport "$SSH_PORT" -m state --state NEW -m recent --update --seconds 60 --hitcount 10 -j DROP
+    echo "已添加规则：SSH连接次数被限制为60秒内10次"
+fi
 
 # 丢弃ping请求
-sudo iptables -A INPUT -p icmp --icmp-type echo-request -j DROP
-echo "丢弃所有的ping请求"
+if ! sudo iptables -C INPUT -p icmp --icmp-type echo-request -j DROP 2>/dev/null; then
+    sudo iptables -A INPUT -p icmp --icmp-type echo-request -j DROP
+    echo "已添加规则：丢弃所有的ping请求"
+fi
 
 # 防止SYN洪泛攻击
-sudo iptables -A INPUT -p tcp ! --syn -m state --state NEW -j DROP
-echo "开启防止SYN洪泛攻击"
+if ! sudo iptables -C INPUT -p tcp ! --syn -m state --state NEW -j DROP 2>/dev/null; then
+    sudo iptables -A INPUT -p tcp ! --syn -m state --state NEW -j DROP
+    echo "已添加规则：开启防止SYN洪泛攻击"
+fi
 
 # 防止端口扫描
-sudo iptables -A INPUT -p tcp --tcp-flags ALL NONE -j DROP
-sudo iptables -A INPUT -p tcp --tcp-flags ALL ALL -j DROP
-echo "开启防止端口扫描"
+if ! sudo iptables -C INPUT -p tcp --tcp-flags ALL NONE -j DROP 2>/dev/null; then
+    sudo iptables -A INPUT -p tcp --tcp-flags ALL NONE -j DROP
+    echo "已添加规则：开启防止端口扫描 (ALL NONE)"
+fi
 
-# 清除重复的规则
-echo "开始清除重复的iptables规则..."
-
-# 使用临时文件存储当前的iptables规则
-temp_rules_file=$(mktemp)
-sudo iptables-save > "$temp_rules_file"
-echo "已保存当前规则到临时文件：$temp_rules_file"
-
-# 从临时文件重新加载iptables规则，并删除重复的规则
-sudo iptables-restore < "$temp_rules_file"
-
-# 移除临时文件
-rm "$temp_rules_file"
-
-echo "删除iptables重复规则完成"
+if ! sudo iptables -C INPUT -p tcp --tcp-flags ALL ALL -j DROP 2>/dev/null; then
+    sudo iptables -A INPUT -p tcp --tcp-flags ALL ALL -j DROP
+    echo "已添加规则：开启防止端口扫描 (ALL ALL)"
+fi
 
 # 输出所有规则
 sudo iptables -L -n -v
