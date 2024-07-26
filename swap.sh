@@ -9,12 +9,15 @@ fi
 # 删除脚本自身（可选，如果没有特殊需要，通常不建议这样做）
 # rm -f $0
 
+echo "当前内存大小为："
+total_memory=$(free -m | awk '/Mem/ {print $2}')
+echo "内存：$total_memory MB"
+
 echo "当前swap分区大小为："
 current_swap=$(free -m | awk '/Swap/ {print $2}')
 echo "Swap：$current_swap MB"
 
 if [ "$current_swap" -gt 0 ]; then
-    total_memory=$(free -m | awk '/Mem/ {print $2}')
     double_memory=$((total_memory * 2))
 
     if [ "$current_swap" -ge "$double_memory" ]; then
