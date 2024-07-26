@@ -26,7 +26,6 @@ if [ "$current_swap" -gt 0 ]; then
     fi
 fi
 
-swapoff -a # 停止所有的swap分区
 echo "请注意：如果当前服务器有swap的话，新建swap后的大小会叠加，所以请酌情添加swap，建议swap为内存的2倍较为适中。"
 
 if [ -z "$1" ]; then
@@ -41,6 +40,10 @@ if ! [[ "$swap" =~ ^[0-9]+$ ]] || [ "$swap" -le 0 ]; then
     echo "错误：请输入一个有效的正整数。"
     exit 1
 fi
+
+
+swapoff -a # 停止所有的swap分区
+echo "暂停所有swap,并且开始创建新的分区。"
 
 dd if=/dev/zero of=/home/swapfile bs=1M count="$swap" status=progress
 mkswap /home/swapfile # 建立swap的文件系统
