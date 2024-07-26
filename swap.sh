@@ -6,9 +6,6 @@ if [ "$EUID" -ne 0 ]; then
   exit 1
 fi
 
-# 删除脚本自身（可选，如果没有特殊需要，通常不建议这样做）
-# rm -f $0
-
 echo "当前内存大小为："
 total_memory=$(free -m | awk '/Mem/ {print $2}')
 echo "内存：$total_memory MB"
@@ -26,6 +23,7 @@ if [ "$current_swap" -gt 0 ]; then
     fi
 fi
 
+
 echo "请注意：如果当前服务器有swap的话，新建swap后的大小会叠加，所以请酌情添加swap，建议swap为内存的2倍较为适中。"
 
 if [ -z "$1" ]; then
@@ -41,13 +39,13 @@ if ! [[ "$swap" =~ ^[0-9]+$ ]] || [ "$swap" -le 0 ]; then
     exit 1
 fi
 
-
-swapoff -a # 停止所有的swap分区
-echo "暂停所有swap,并且开始创建新的分区。"
+# 停止所有的swap分区，但不会删除它们或影响重启后的swap配置
+swapoff -a
 
 dd if=/dev/zero of=/home/swapfile bs=1M count="$swap" status=progress
-mkswap /home/swapfile # 建立swap的文件系统
-swapon /home/swapfile # 启用swap文件
+sudo chmod 600 /home/swapfile # 设置正确的权限
+sudo mkswap /home/swapfile # 建立swap的文件系统
+sudo swapon /home/swapfile # 启用swap文件
 echo "/home/swapfile swap swap defaults 0 0" >>/etc/fstab
 echo "swap建立完成！"
 free -m
