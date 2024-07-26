@@ -60,8 +60,8 @@ main() {
     fi
 
     # 检查磁盘空间是否足够
-    required_space=$(swap * 1024 * 1024) # 1MB = 1024KB = 1024*1024Bytes
-    available_space=$(df /home | awk 'NR==2 {print $4}' | tr -d 'G')
+    required_space=$((swap * 1024)) # 1MB = 1024KB
+    available_space=$(df /home | awk 'NR==2 {print $4}')
     if [ "$available_space" -lt "$required_space" ]; then
         echo "错误：磁盘空间不足，无法创建所需大小的swap文件。"
         exit 1
@@ -72,4 +72,4 @@ main() {
 }
 
 # 执行主逻辑
-main
+main "$@"
