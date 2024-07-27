@@ -6,18 +6,6 @@ if [[ $EUID -ne 0 ]]; then
    exit 1
 fi
 
-# 检查是否安装了iptables-persistent
-if ! dpkg -s iptables-persistent &> /dev/null; then
-    echo "安装iptables-persistent..."
-    export DEBIAN_FRONTEND=noninteractive
-    apt-get update
-    apt-get install -y iptables-persistent
-fi
-
-# 启用iptables-persistent
-sudo systemctl enable netfilter-persistent
-sudo systemctl start netfilter-persistent
-
 
 # 获取SSH端口号
 SSH_PORT=$(sudo grep -i "^Port" /etc/ssh/sshd_config | awk '{print $2}' | head -1)
@@ -62,12 +50,12 @@ if ! sudo iptables -C INPUT -p tcp --tcp-flags ALL ALL -j DROP 2>/dev/null; then
     echo "已添加规则：开启防止端口扫描 (ALL ALL)"
 fi
 
-# 保存当前的iptables规则
-iptables-save > /etc/iptables/rules.v4
-ip6tables-save > /etc/iptables/rules.v6
+#保存iptables规则
+iptables-save > /etc/iptables.up.rules
+echo -e '#!/bin/bash\n/sbin/iptables-restore < /etc/iptables.up.rules' > /etc/network/if-pre-up.d/iptables
+chmod +x /etc/network/if-pre-up.d/iptables
 
-# 启用iptables规则的自动加载
-netfilter-persistent save
+iptables-save > /etc/iptables.up.rules
 
 # 输出所有规则
 sudo iptables -L -n -v
