@@ -6,6 +6,20 @@ if [[ $EUID -ne 0 ]]; then
    exit 1
 fi
 
+# 检查是否安装了iptables-persistent
+if ! dpkg -l iptables-persistent &> /dev/null; then
+    echo "安装iptables-persistent..."
+    apt-get update
+    apt-get install -y iptables-persistent
+fi
+
+# 保存当前的iptables规则
+iptables-save > /etc/iptables/rules.v4
+
+# 启用iptables规则的自动加载
+iptables-persistent update
+
+
 # 获取SSH端口号
 SSH_PORT=$(sudo grep -i "^Port" /etc/ssh/sshd_config | awk '{print $2}' | head -1)
 if [ -z "$SSH_PORT" ]; then
