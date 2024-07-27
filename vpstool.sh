@@ -14,12 +14,16 @@ if ! dpkg -s iptables-persistent &> /dev/null; then
     apt-get install -y iptables-persistent
 fi
 
+# 启用iptables-persistent
+sudo systemctl enable netfilter-persistent
+sudo systemctl start netfilter-persistent
+
 # 保存当前的iptables规则
 iptables-save > /etc/iptables/rules.v4
 ip6tables-save > /etc/iptables/rules.v6
 
 # 启用iptables规则的自动加载
-iptables-persistent save
+netfilter-persistent save
 
 
 # 获取SSH端口号
