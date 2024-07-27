@@ -7,7 +7,7 @@ if [[ $EUID -ne 0 ]]; then
 fi
 
 # 检查是否安装了iptables-persistent
-if ! dpkg -l iptables-persistent &> /dev/null; then
+if ! dpkg -s iptables-persistent &> /dev/null; then
     echo "安装iptables-persistent..."
     apt-get update
     apt-get install -y iptables-persistent
@@ -15,9 +15,10 @@ fi
 
 # 保存当前的iptables规则
 iptables-save > /etc/iptables/rules.v4
+ip6tables-save > /etc/iptables/rules.v6
 
 # 启用iptables规则的自动加载
-iptables-persistent update
+netfilter-persistent save
 
 
 # 获取SSH端口号
