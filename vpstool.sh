@@ -18,13 +18,6 @@ fi
 sudo systemctl enable netfilter-persistent
 sudo systemctl start netfilter-persistent
 
-# 保存当前的iptables规则
-iptables-save > /etc/iptables/rules.v4
-ip6tables-save > /etc/iptables/rules.v6
-
-# 启用iptables规则的自动加载
-netfilter-persistent save
-
 
 # 获取SSH端口号
 SSH_PORT=$(sudo grep -i "^Port" /etc/ssh/sshd_config | awk '{print $2}' | head -1)
@@ -68,6 +61,13 @@ if ! sudo iptables -C INPUT -p tcp --tcp-flags ALL ALL -j DROP 2>/dev/null; then
     sudo iptables -A INPUT -p tcp --tcp-flags ALL ALL -j DROP
     echo "已添加规则：开启防止端口扫描 (ALL ALL)"
 fi
+
+# 保存当前的iptables规则
+iptables-save > /etc/iptables/rules.v4
+ip6tables-save > /etc/iptables/rules.v6
+
+# 启用iptables规则的自动加载
+netfilter-persistent save
 
 # 输出所有规则
 sudo iptables -L -n -v
