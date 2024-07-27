@@ -9,6 +9,7 @@ fi
 # 检查是否安装了iptables-persistent
 if ! dpkg -s iptables-persistent &> /dev/null; then
     echo "安装iptables-persistent..."
+    export DEBIAN_FRONTEND=noninteractive
     apt-get update
     apt-get install -y iptables-persistent
 fi
@@ -18,7 +19,7 @@ iptables-save > /etc/iptables/rules.v4
 ip6tables-save > /etc/iptables/rules.v6
 
 # 启用iptables规则的自动加载
-netfilter-persistent save
+iptables-persistent save
 
 
 # 获取SSH端口号
