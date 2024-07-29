@@ -40,10 +40,6 @@ rm -rf /var/cache/*
 echo "清理 /var/log 目录下的日志文件..." | tee -a "$LOG_FILE"
 find /var/log -type f -mmin +60 -exec rm -f {} \;
 
-# 清理 /boot 目录下的旧内核
-echo "清理 /boot 目录下的旧内核..." | tee -a "$LOG_FILE"
-dpkg --list 'linux-*' | awk '/^ii/{print $2}' | grep -vE "linux-(headers|image)-$(uname -r | sed "s/\(.*\)-\([^0-9]\+\)/\1/")" | xargs apt-get -y purge
-
 # 清理未被使用的依赖包
 echo "清理未被使用的依赖包..." | tee -a "$LOG_FILE"
 apt-get autoremove -y
