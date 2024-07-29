@@ -63,3 +63,4 @@ echo "清理完成: $end_time_human" >> "$LOG_FILE"
 
 # 计算耗时
 echo "共耗时: $((end_time - start_time)) 秒" >> "$LOG_FILE"
+echo "共耗时: $((end_time - start_time)) 秒，已记录在$LOG_FILE"
