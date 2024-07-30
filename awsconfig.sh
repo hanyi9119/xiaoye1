@@ -79,9 +79,10 @@ sudo chmod +x /root/awsconfig/check.sh
 # 设置定时任务，每5分钟执行一次检查
 (crontab -l ; echo "*/5 * * * * /bin/bash /root/awsconfig/check.sh > /root/awsconfig/shutdown_debug.log 2>&1") | crontab -
 
-
+echo "流量限额：${traffic_limit}G"
 echo "实时查看流量数据,输入：vnstat"
+echo "查看定时任务，输入：crontab -l"
 echo "超额流量数值保存文件/root/awsconfig/traffic_limit.txt"
 echo "实时流量数据储存文件/root/awsconfig/shutdown_debug.log"
-echo "查看定时任务crontab -l"
+echo "实时检测脚本文件/root/awsconfig/check.sh"
 echo "大功告成！脚本已安装并配置完成。"
