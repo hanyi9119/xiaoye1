@@ -80,6 +80,7 @@ EOF
     (crontab -l ; echo "*/5 * * * * /bin/bash /root/awsconfig/check.sh > /root/awsconfig/shutdown_debug.log 2>&1") | crontab -
 
     echo "流量限额设置为：${traffic_limit}G"
+    crontab -l
     echo "实时查看流量数据, 输入：vnstat"
     echo "查看定时任务，输入：crontab -l"
     echo "超额流量数值保存文件 /root/awsconfig/traffic_limit.txt"
@@ -99,6 +100,15 @@ view_monthly_traffic() {
     vnstat
 }
 
+show_configuration() {
+    echo "定时任务计划："
+    crontab -l
+    echo "配置文件目录：/root/awsconfig"
+    echo "超额流量数值保存文件：/root/awsconfig/traffic_limit.txt"
+    echo "实时流量数据储存文件：/root/awsconfig/shutdown_debug.log"
+    echo "实时检测脚本文件：/root/awsconfig/check.sh"
+}
+
 uninstall_script() {
     sudo systemctl stop vnstat
     sudo systemctl disable vnstat
@@ -114,8 +124,9 @@ echo "请选择操作："
 echo "1. 设置流量限额"
 echo "2. 清零统计数据"
 echo "3. 查看本月流量"
-echo "4. 卸载脚本"
-echo -n "请输入选项 (1-4): "
+echo "4. 显示定时任务计划和配置文件目录"
+echo "5. 卸载脚本"
+echo -n "请输入选项 (1-5): "
 read choice
 
 case $choice in
@@ -129,6 +140,9 @@ case $choice in
         view_monthly_traffic
         ;;
     4)
+        show_configuration
+        ;;
+    5)
         uninstall_script
         ;;
     *)
