@@ -76,8 +76,9 @@ EOF
     # 授予权限
     sudo chmod +x /root/awsconfig/check.sh
 
-    # 设置定时任务，每5分钟执行一次检查
-    (crontab -l ; echo "*/5 * * * * /bin/bash /root/awsconfig/check.sh > /root/awsconfig/shutdown_debug.log 2>&1") | crontab -
+    # 检查和设置定时任务，每5分钟执行一次检查
+    cron_job="*/5 * * * * /bin/bash /root/awsconfig/check.sh > /root/awsconfig/shutdown_debug.log 2>&1"
+    (crontab -l | grep -Fxq "$cron_job") || (crontab -l; echo "$cron_job") | crontab -
 
     echo "流量限额设置为：${traffic_limit}G"
     echo "定时任务计划："
