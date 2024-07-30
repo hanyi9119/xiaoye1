@@ -102,6 +102,7 @@ view_monthly_traffic() {
 }
 
 show_configuration() {
+    echo "当前流量限额为: $(cat /root/awsconfig/traffic_limit.txt) GB"
     echo "定时任务计划："
     crontab -l
     echo "配置文件目录：/root/awsconfig"
