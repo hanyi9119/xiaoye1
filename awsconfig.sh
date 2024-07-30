@@ -30,9 +30,9 @@ set_traffic_limit() {
     sudo apt install cron vnstat bc -y
 
     # 配置vnstat，使用自动获取的网络接口名称
-    sudo sed -i "0,/^;Interface.*/s//Interface $interface_name/" /etc/vnstat.conf
-    sudo sed -i "0,/^;UnitMode.*/s//UnitMode 1/" /etc/vnstat.conf
-    sudo sed -i "0,/^;MonthRotate.*/s//MonthRotate 1/" /etc/vnstat.conf
+    sudo sed -i "s/^Interface.*/Interface $interface_name/" /etc/vnstat.conf
+    sudo sed -i "s/^# *UnitMode.*/UnitMode 1/" /etc/vnstat.conf
+    sudo sed -i "s/^# *MonthRotate.*/MonthRotate 1/" /etc/vnstat.conf
 
     # 重启vnstat服务
     sudo systemctl enable vnstat
@@ -76,7 +76,7 @@ EOF
     # 授予权限
     sudo chmod +x /root/awsconfig/check.sh
 
-    # 检查和设置定时任务，每5分钟执行一次检查
+    # 设置定时任务，每5分钟执行一次检查
     cron_job="*/5 * * * * /bin/bash /root/awsconfig/check.sh > /root/awsconfig/shutdown_debug.log 2>&1"
     (crontab -l | grep -Fxq "$cron_job") || (crontab -l; echo "$cron_job") | crontab -
 
