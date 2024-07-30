@@ -80,6 +80,7 @@ EOF
     (crontab -l ; echo "*/5 * * * * /bin/bash /root/awsconfig/check.sh > /root/awsconfig/shutdown_debug.log 2>&1") | crontab -
 
     echo "流量限额设置为：${traffic_limit}G"
+    echo "定时任务计划："
     crontab -l
     echo "实时查看流量数据, 输入：vnstat"
     echo "查看定时任务，输入：crontab -l"
