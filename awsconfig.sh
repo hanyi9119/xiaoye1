@@ -80,7 +80,7 @@ EOF
     cron_job="*/5 * * * * /bin/bash /root/awsconfig/check.sh > /root/awsconfig/shutdown_debug.log 2>&1"
     (crontab -l | grep -Fxq "$cron_job") || (crontab -l; echo "$cron_job") | crontab -
 
-    echo "流量限额设置为：${traffic_limit}G"
+    echo "流量限额设置为（双向统计）：${traffic_limit}G"
     echo "定时任务计划："
     crontab -l
     echo "实时查看流量数据, 输入：vnstat"
@@ -103,7 +103,7 @@ view_monthly_traffic() {
 }
 
 show_configuration() {
-    echo "当前流量限额为: $(cat /root/awsconfig/traffic_limit.txt) GB"
+    echo "当前流量限额为（双向统计）: $(cat /root/awsconfig/traffic_limit.txt) GB"
     echo "定时任务计划："
     crontab -l
     echo "配置文件目录：/root/awsconfig"
