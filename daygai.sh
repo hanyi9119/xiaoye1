@@ -15,7 +15,8 @@ if [[ "$day" =~ ^[0-9]+$ ]] && [ "$day" -ge 1 ] && [ "$day" -le 31 ]; then
         cp "$VNSTAT_CONF" "$VNSTAT_CONF.bak"
 
         # 更新配置文件中的MonthRotate设置
-        sed -i "s/^MonthRotate[[:space:]]*[0-9]*\([[:space:]]*;.*\)*$/MonthRotate $day\1/" "$VNSTAT_CONF"
+        # 去除行首的注释符号并设置新的值
+        sed -i "s/^;\?MonthRotate[[:space:]]*[0-9]*/MonthRotate $day/" "$VNSTAT_CONF"
 
         echo "vnStat配置已更新，MonthRotate已设置为 $day。"
 
