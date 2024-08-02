@@ -18,6 +18,13 @@ if [[ "$day" =~ ^[0-9]+$ ]] && [ "$day" -ge 1 ] && [ "$day" -le 31 ]; then
         sed -i "s/^MonthRotate[[:space:]]*[0-9]*\([[:space:]]*;.*\)*$/MonthRotate $day\1/" "$VNSTAT_CONF"
 
         echo "vnStat配置已更新，MonthRotate已设置为 $day。"
+
+        # 输出 MonthRotate 参数前后共三行的内容
+        grep -n "MonthRotate" "$VNSTAT_CONF" | cut -d : -f 1 | while read -r line; do
+            start=$((line-1))
+            end=$((line+1))
+            awk "NR>=$start && NR<=$end" "$VNSTAT_CONF"
+        done
     else
         echo "错误：无法找到 $VNSTAT_CONF 文件。"
     fi
