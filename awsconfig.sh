@@ -83,7 +83,7 @@ EOF
     echo "流量限额设置为（双向统计）：${traffic_limit}G"
     echo "定时任务计划："
     crontab -l
-    echo "实时查看流量数据, 输入：vnstat"
+    echo "查看流量数据, 输入：vnstat"
     echo "查看定时任务，输入：crontab -l"
     echo "超额流量数值保存文件 /root/awsconfig/traffic_limit.txt"
     echo "实时流量数据储存文件 /root/awsconfig/shutdown_debug.log"
@@ -113,13 +113,13 @@ show_configuration() {
 }
 
 modify_billing_day() {
-    # 提示用户输入1-31之间的结算日
-    read -p "请输入结算日 (1-31): " day
+    # 提示用户输入1-31之间的清零日期
+    read -p "请输入清零日期 (1-31): " day
 
     # 检查输入的数字是否在1-31之间
     if [[ "$day" =~ ^[0-9]+$ ]] && [ "$day" -ge 1 ] && [ "$day" -le 31 ]; then
         # 确认用户输入
-        echo "您输入的结算日为: $day"
+        echo "您输入的清零日期为: $day"
 
         # 配置文件路径
         VNSTAT_CONF="/etc/vnstat.conf"
@@ -133,7 +133,7 @@ modify_billing_day() {
             # 保留行首的分号并设置新的值
             sed -i "s/^;\?MonthRotate[[:space:]]*[0-9]*$/;MonthRotate $day/" "$VNSTAT_CONF"
 
-            echo "vnStat配置已更新，MonthRotate已设置为 $day。"
+            echo "/etc/vnstat.conf配置已更新，MonthRotate已设置为 $day。"
 
             # 输出相关的三行内容
             awk '/;MonthRotate/ {print NR-1, NR, NR+1}' "$VNSTAT_CONF" | \
@@ -163,7 +163,7 @@ echo "1. 设置流量限额"
 echo "2. 清零统计数据"
 echo "3. 查看本月流量"
 echo "4. 显示定时任务计划和配置文件目录"
-echo "5. 修改结算日"
+echo "5. 修改流量清零日期"
 echo "6. 卸载脚本"
 echo -n "请输入选项 (1-6): "
 read choice
