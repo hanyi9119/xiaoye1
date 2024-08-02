@@ -22,13 +22,10 @@ if [[ "$day" =~ ^[0-9]+$ ]] && [ "$day" -ge 1 ] && [ "$day" -le 31 ]; then
 
         echo "vnStat配置已更新，MonthRotate已设置为 $day。"
 
-        # 查找MonthRotate的行号，并输出其前后一行
-        line=$(awk '/;MonthRotate/ {print FNR}' "$VNSTAT_CONF" | head -n 1)
-        start=$((line - 1))
-        end=$((line + 1))
-        
         # 输出相关的三行内容
-        sed -n "${start},${end}p" "$VNSTAT_CONF"
+        awk '/;MonthRotate/ {print NR-1, NR, NR+1}' "$VNSTAT_CONF" | \
+        xargs -n1 | \
+        while read -r line; do sed -n "${line}p" "$VNSTAT_CONF"; done
     else
         echo "错误：无法找到 $VNSTAT_CONF 文件。"
     fi
