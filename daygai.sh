@@ -20,7 +20,7 @@ if [[ "$day" =~ ^[0-9]+$ ]] && [ "$day" -ge 1 ] && [ "$day" -le 31 ]; then
         echo "vnStat配置已更新，MonthRotate已设置为 $day。"
 
         # 输出 MonthRotate 参数前后共三行的内容
-        grep -n "MonthRotate" "$VNSTAT_CONF" | cut -d : -f 1 | while read -r line; do
+        grep -n "^MonthRotate" "$VNSTAT_CONF" | cut -d: -f1 | while read -r line; do
             start=$((line-1))
             end=$((line+1))
             awk "NR>=$start && NR<=$end" "$VNSTAT_CONF"
