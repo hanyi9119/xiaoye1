@@ -132,7 +132,7 @@ modify_billing_day() {
             # 尝试修改配置文件中的 ;MonthRotate 设置
             if grep -q '^;MonthRotate' "$VNSTAT_CONF"; then
                 # 找到以 ;MonthRotate 开头的行并修改为 MonthRotate
-                sed -i "s/^;\?MonthRotate[[:space:]]*[0-9]*$/;MonthRotate $day/" "$VNSTAT_CONF"
+                sed -i "s/^;\?MonthRotate[[:space:]]*[0-9]*$/MonthRotate $day/" "$VNSTAT_CONF"
             else
                 # 如果未找到 ;MonthRotate，则修改 MonthRotate 设置
                 sed -i "s/^;\MonthRotate[[:space:]]*[0-9]*$/MonthRotate $day/" "$VNSTAT_CONF"
