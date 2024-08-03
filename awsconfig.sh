@@ -83,7 +83,7 @@ EOF
     echo "流量限额设置为（双向统计）：${traffic_limit}G"
     echo "定时任务计划："
     crontab -l
-    echo "月度流量刷新时间MonthRotate的值："
+    echo "月度流量刷新日期MonthRotate的值："
     sed -n '/MonthRotate/ p' /etc/vnstat.conf
     echo "查看流量数据, 输入：vnstat"
     echo "查看定时任务，输入：crontab -l"
@@ -108,7 +108,7 @@ show_configuration() {
     echo "当前流量限额为（双向统计）: $(cat /root/awsconfig/traffic_limit.txt) GB"
     echo "定时任务计划："
     crontab -l
-    echo "月度流量刷新时间MonthRotate的值："
+    echo "月度流量刷新日期MonthRotate的值："
     sed -n '/MonthRotate/ p' /etc/vnstat.conf
     echo "配置文件目录：/root/awsconfig"
     echo "超额流量数值保存文件：/root/awsconfig/traffic_limit.txt"
@@ -174,7 +174,7 @@ echo "1. 设置流量限额"
 echo "2. 清零统计数据"
 echo "3. 查看本月流量"
 echo "4. 显示定时任务计划和配置文件目录"
-echo "5. 修改流量清零日期"
+echo "5. 修改月度流量刷新日期"
 echo "6. 卸载脚本"
 echo -n "请输入选项 (1-6): "
 read choice
