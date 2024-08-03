@@ -135,7 +135,7 @@ modify_billing_day() {
                 sed -i "s/^;\?MonthRotate[[:space:]]*[0-9]*$/;MonthRotate $day/" "$VNSTAT_CONF"
             else
                 # 如果未找到 ;MonthRotate，则修改 MonthRotate 设置
-                sed -i "s/^;\MonthRotate[[:space:]]*[0-9]*$/;MonthRotate $day/" "$VNSTAT_CONF"
+                sed -i "s/^;\MonthRotate[[:space:]]*[0-9]*$/MonthRotate $day/" "$VNSTAT_CONF"
             fi
 
             echo "/etc/vnstat.conf 配置已更新，MonthRotate 已设置为 $day。"
