@@ -112,6 +112,7 @@ show_configuration() {
     echo "实时检测脚本文件：/root/awsconfig/check.sh"
 }
 
+
 modify_billing_day() {
     # 提示用户输入1-31之间的清零日期
     read -p "请输入清零日期 (1-31): " day
@@ -144,7 +145,7 @@ modify_billing_day() {
             awk '/MonthRotate/ {print NR-1, NR, NR+1}' "$VNSTAT_CONF" | \
             sort -n | \
             uniq | \
-            xargs -I{} sed -n '{}p' "$VNSTAT_CONF"
+            while read -r line; do sed -n "${line}p" "$VNSTAT_CONF"; done
         else
             echo "错误：无法找到 $VNSTAT_CONF 文件。"
         fi
@@ -152,6 +153,7 @@ modify_billing_day() {
         echo "输入无效。请输入1到31之间的数字。"
     fi
 }
+
 
 
 
