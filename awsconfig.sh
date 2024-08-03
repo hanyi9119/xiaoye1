@@ -157,6 +157,7 @@ modify_billing_day() {
 
 
 
+
 uninstall_script() {
     sudo systemctl stop vnstat
     sudo systemctl disable vnstat
