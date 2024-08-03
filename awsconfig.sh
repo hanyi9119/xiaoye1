@@ -131,6 +131,7 @@ modify_billing_day() {
 
             # 尝试修改配置文件中的 ;MonthRotate 设置
             if grep -q '^;MonthRotate' "$VNSTAT_CONF"; then
+                # 找到以 ;MonthRotate 开头的行并修改为 MonthRotate
                 sed -i "s/^;MonthRotate[[:space:]]*[0-9]*$/MonthRotate $day/" "$VNSTAT_CONF"
             else
                 # 如果未找到 ;MonthRotate，则修改 MonthRotate 设置
@@ -138,9 +139,9 @@ modify_billing_day() {
             fi
 
             echo "/etc/vnstat.conf 配置已更新，MonthRotate 已设置为 $day。"
-            echo "参数内容输出如下："
+
             # 输出相关的三行内容
-            awk '/;*MonthRotate/ {print NR-1, NR, NR+1}' "$VNSTAT_CONF" | \
+            awk '/MonthRotate/ {print NR-1, NR, NR+1}' "$VNSTAT_CONF" | \
             xargs -n1 | \
             while read -r line; do sed -n "${line}p" "$VNSTAT_CONF"; done
         else
