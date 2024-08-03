@@ -112,7 +112,6 @@ show_configuration() {
     echo "实时检测脚本文件：/root/awsconfig/check.sh"
 }
 
-
 modify_billing_day() {
     # 提示用户输入1-31之间的清零日期
     read -p "请输入清零日期 (1-31): " day
@@ -130,15 +129,20 @@ modify_billing_day() {
             # 备份原配置文件
             cp "$VNSTAT_CONF" "$VNSTAT_CONF.bak"
 
-            # 修改配置文件中的 ;MonthRotate 或 MonthRotate 设置
-            sed -i -e "s/^;\?MonthRotate[[:space:]]*[0-9]*$/MonthRotate $day/" "$VNSTAT_CONF"
+            # 尝试修改配置文件中的 ;MonthRotate 设置
+            if grep -q '^;MonthRotate' "$VNSTAT_CONF"; then
+                # 找到以 ;MonthRotate 开头的行并修改为 MonthRotate
+                sed -i "s/^;MonthRotate[[:space:]]*[0-9]*$/MonthRotate $day/" "$VNSTAT_CONF"
+            else
+                # 如果未找到 ;MonthRotate，则修改 MonthRotate 设置
+                sed -i "s/^MonthRotate[[:space:]]*[0-9]*$/MonthRotate $day/" "$VNSTAT_CONF"
+            fi
 
             echo "/etc/vnstat.conf 配置已更新，MonthRotate 已设置为 $day。"
 
             # 输出相关的三行内容
             awk '/MonthRotate/ {print NR-1, NR, NR+1}' "$VNSTAT_CONF" | \
-            sort -n | \
-            uniq | \
+            xargs -n1 | \
             while read -r line; do sed -n "${line}p" "$VNSTAT_CONF"; done
         else
             echo "错误：无法找到 $VNSTAT_CONF 文件。"
@@ -147,8 +151,6 @@ modify_billing_day() {
         echo "输入无效。请输入1到31之间的数字。"
     fi
 }
-
-
 
 
 uninstall_script() {
