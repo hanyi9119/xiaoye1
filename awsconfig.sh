@@ -25,8 +25,10 @@ set_traffic_limit() {
 
     echo $traffic_limit > /root/awsconfig/traffic_limit.txt
 
-    # 安装依赖
+    # 安装依赖/设置市区/安装流量监控软件vnstat
     sudo apt update
+    sudo apt install  -y timedatectl
+    sudo timedatectl set-timezone Asia/Hong_Kong
     sudo apt install cron vnstat bc -y
 
     # 配置vnstat，使用自动获取的网络接口名称
