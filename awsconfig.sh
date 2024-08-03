@@ -84,7 +84,7 @@ EOF
     echo "定时任务计划："
     crontab -l
     echo "月度流量刷新时间MonthRotate的值："
-    sed -n '/MonthRotate/ p' "$VNSTAT_CONF"
+    sed -n '/MonthRotate/ p' /etc/vnstat.conf
     echo "查看流量数据, 输入：vnstat"
     echo "查看定时任务，输入：crontab -l"
     echo "超额流量数值保存文件 /root/awsconfig/traffic_limit.txt"
@@ -109,7 +109,7 @@ show_configuration() {
     echo "定时任务计划："
     crontab -l
     echo "月度流量刷新时间MonthRotate的值："
-    sed -n '/MonthRotate/ p' "$VNSTAT_CONF"
+    sed -n '/MonthRotate/ p' /etc/vnstat.conf
     echo "配置文件目录：/root/awsconfig"
     echo "超额流量数值保存文件：/root/awsconfig/traffic_limit.txt"
     echo "实时流量数据储存文件：/root/awsconfig/shutdown_debug.log"
