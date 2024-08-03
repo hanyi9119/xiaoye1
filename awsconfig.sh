@@ -142,6 +142,7 @@ modify_billing_day() {
                 # 添加 MonthRotate 设置
                 echo "MonthRotate $day" >> "$VNSTAT_CONF"
                 echo "MonthRotate 设置已添加。"
+                sed -n '/MonthRotate/ p' "$VNSTAT_CONF"
             fi
         else
             echo "错误：无法找到 $VNSTAT_CONF 文件。"
