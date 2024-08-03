@@ -106,6 +106,8 @@ show_configuration() {
     echo "当前流量限额为（双向统计）: $(cat /root/awsconfig/traffic_limit.txt) GB"
     echo "定时任务计划："
     crontab -l
+    echo "月度流量刷新时间MonthRotate的值："
+    sed -n '/MonthRotate/ p' "$VNSTAT_CONF"
     echo "配置文件目录：/root/awsconfig"
     echo "超额流量数值保存文件：/root/awsconfig/traffic_limit.txt"
     echo "实时流量数据储存文件：/root/awsconfig/shutdown_debug.log"
