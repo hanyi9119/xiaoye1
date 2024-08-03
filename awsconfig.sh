@@ -163,7 +163,7 @@ uninstall_script() {
     sudo systemctl disable vnstat
     sudo rm -rf /var/lib/vnstat
     sudo apt remove -y vnstat bc
-    sudo rm -rf /root/awsconfig
+    sudo rm -rf /root/awsconfig/
     (crontab -l | grep -v '/root/awsconfig/check.sh') | crontab -
     echo "脚本及相关组件已卸载。"
 }
