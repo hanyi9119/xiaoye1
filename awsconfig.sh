@@ -83,6 +83,8 @@ EOF
     echo "流量限额设置为（双向统计）：${traffic_limit}G"
     echo "定时任务计划："
     crontab -l
+    echo "月度流量刷新时间MonthRotate的值："
+    sed -n '/MonthRotate/ p' "$VNSTAT_CONF"
     echo "查看流量数据, 输入：vnstat"
     echo "查看定时任务，输入：crontab -l"
     echo "超额流量数值保存文件 /root/awsconfig/traffic_limit.txt"
