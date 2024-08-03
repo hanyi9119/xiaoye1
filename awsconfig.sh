@@ -142,8 +142,9 @@ modify_billing_day() {
 
             # 输出相关的三行内容
             awk '/MonthRotate/ {print NR-1, NR, NR+1}' "$VNSTAT_CONF" | \
-            xargs -n1 | \
-            while read -r line; do sed -n "${line}p" "$VNSTAT_CONF"; done
+            sort -n | \
+            uniq | \
+            xargs -I{} sed -n '{}p' "$VNSTAT_CONF"
         else
             echo "错误：无法找到 $VNSTAT_CONF 文件。"
         fi
@@ -151,6 +152,7 @@ modify_billing_day() {
         echo "输入无效。请输入1到31之间的数字。"
     fi
 }
+
 
 
 uninstall_script() {
