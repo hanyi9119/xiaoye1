@@ -136,13 +136,13 @@ modify_billing_day() {
                 echo "/etc/vnstat.conf 配置已更新，MonthRotate 已设置为 $day。"
                 
                 # 打印 MonthRotate 行
-                sed -n '/MonthRotate/ p' "$VNSTAT_CONF"
+                grep 'MonthRotate' /etc/vnstat.conf
             else
                 echo "未找到 MonthRotate 设置，添加新设置。"
                 # 添加 MonthRotate 设置
                 echo "MonthRotate $day" >> "$VNSTAT_CONF"
                 echo "MonthRotate 设置已添加。"
-                sed -n '/MonthRotate/ p' "$VNSTAT_CONF"
+                grep 'MonthRotate' /etc/vnstat.conf
             fi
         else
             echo "错误：无法找到 $VNSTAT_CONF 文件。"
