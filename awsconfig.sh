@@ -183,7 +183,7 @@ block_traffic_except_ssh() {
         exit 1
     fi
 
-    echo $traffic_limit > /root/awsconfig/traffic_limit_block.txt
+    echo $traffic_limit > /root/awsconfig/traffic_limit.txt
     
     # 安装依赖/设置时区/安装流量监控软件vnstat
     sudo apt update
@@ -206,7 +206,7 @@ block_traffic_except_ssh() {
 
 # 使用的环境变量
 interface_name="$interface_name"
-traffic_limit=\$(cat /root/awsconfig/traffic_limit_block.txt)
+traffic_limit=\$(cat /root/awsconfig/traffic_limit.txt)
 
 # 获取SSH端口
 ssh_port=\$(ss -tnlp | grep sshd | awk '{print \$4}' | sed 's/.*://')
