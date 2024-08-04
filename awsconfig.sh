@@ -110,8 +110,9 @@ show_configuration() {
     echo "当前流量限额为（双向统计）: $(cat /root/awsconfig/traffic_limit.txt) GB"
     echo "定时任务计划："
     crontab -l
+    echo "iptables规则查询：sudo iptables -L -n -v"      
     echo "iptables断网规则如下"
-    sudo iptables -L -n -v    
+    sudo iptables -L -n -v
     echo "月度流量刷新日期MonthRotate的值："
     sed -n '/MonthRotate/ p' /etc/vnstat.conf
     echo "配置文件目录：/root/awsconfig"
@@ -269,7 +270,7 @@ EOF
     echo "流量限额设置为（双向统计）：${traffic_limit}G"
     echo "定时任务计划："
     crontab -l
-    echo "sudo iptables -L -n -v"
+    echo "iptables规则查询：sudo iptables -L -n -v"      
     echo "iptables断网规则如下"
     sudo iptables -L -n -v
     echo "流量超限时将屏蔽所有连接，仅保留SSH连接。"
