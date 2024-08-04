@@ -97,12 +97,22 @@ EOF
 
 set_traffic_limit_and_block_internet() {
     # 1. 调整服务器时区为香港时区
+    sudo apt install  -y timedatectl
     sudo timedatectl set-timezone Asia/Hong_Kong
 
     # 2. 安装 vnstat 和 bc
     sudo apt update
     sudo apt install -y vnstat bc
+    
+    # 配置vnstat，使用自动获取的网络接口名称
+    sudo sed -i "s/^Interface.*/Interface $interface_name/" /etc/vnstat.conf
+    sudo sed -i "s/^# *UnitMode.*/UnitMode 1/" /etc/vnstat.conf
+    sudo sed -i "s/^# *MonthRotate.*/MonthRotate 1/" /etc/vnstat.conf
 
+    # 重启vnstat服务
+    sudo systemctl enable vnstat
+    sudo systemctl restart vnstat
+    
     # 3. 创建自动断网脚本 check_internet.sh
     cat << EOF | sudo tee /root/awsconfig/check_internet.sh > /dev/null
 #!/bin/bash
