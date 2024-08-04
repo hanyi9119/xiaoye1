@@ -220,7 +220,6 @@ ssh_port=$(ss -tnlp | grep sshd | awk '{print $4}' | sed 's/.*://')
 if [ -z "$ssh_port" ]; then
     ssh_port=22  # 如果没有找到端口号，则默认为22
 fi
-echo "SSH端口：$ssh_port"
 
 # 更新网卡记录
 vnstat -i "$interface_name"
