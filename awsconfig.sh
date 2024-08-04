@@ -110,6 +110,8 @@ show_configuration() {
     echo "当前流量限额为（双向统计）: $(cat /root/awsconfig/traffic_limit.txt) GB"
     echo "定时任务计划："
     crontab -l
+    echo "iptables断网规则如下"
+    sudo iptables -L -n -v    
     echo "月度流量刷新日期MonthRotate的值："
     sed -n '/MonthRotate/ p' /etc/vnstat.conf
     echo "配置文件目录：/root/awsconfig"
@@ -170,15 +172,114 @@ uninstall_script() {
     echo "脚本及相关组件已卸载。"
 }
 
+block_traffic_except_ssh() {
+    echo -n "请输入流量限额（GB）："
+    read traffic_limit
+
+    # 检查输入是否为整数
+    if ! [[ "$traffic_limit" =~ ^[0-9]+$ ]]; then
+        echo "错误：请输入一个有效的整数。"
+        exit 1
+    fi
+
+    echo $traffic_limit > /root/awsconfig/traffic_limit_block.txt
+
+    # 获取SSH端口
+    ssh_port=$(ss -tnlp | grep sshd | awk '{print $4}' | sed 's/.*://')
+    [ -z "$ssh_port" ] && ssh_port=22
+
+    # 创建断网脚本
+    cat << EOF | sudo tee /root/awsconfig/block_traffic.sh > /dev/null
+#!/bin/bash
+
+# 使用的环境变量
+interface_name="$interface_name"
+traffic_limit=\$(cat /root/awsconfig/traffic_limit_block.txt)
+
+# 更新网卡记录
+vnstat -i "\$interface_name"
+
+# 获取每月用量
+TRAFF_USED=\$(vnstat --oneline b | awk -F';' '{print \$11}')
+
+# 检查是否获取到数据
+if [[ -z "\$TRAFF_USED" ]]; then
+    echo "Error: Not enough data available yet."
+    exit 1
+fi
+
+# 将流量转换为GB
+CHANGE_TO_GB=\$(echo "scale=2; \$TRAFF_USED / 1073741824" | bc)
+
+# 检查转换后的流量是否为有效数字
+if ! [[ "\$CHANGE_TO_GB" =~ ^[0-9]+([.][0-9]+)?\$ ]]; then
+    echo "Error: Invalid traffic data."
+    exit 1
+fi
+
+# 比较流量是否超过阈值
+if (( \$(echo "\$CHANGE_TO_GB > \$traffic_limit" | bc -l) )); then
+    # 备份现有iptables规则
+    sudo iptables-save > /root/awsconfig/iptables_backup.rules
+
+    # 清除所有规则
+    sudo iptables -F
+
+    # 允许SSH连接
+    sudo iptables -A INPUT -p tcp --dport $ssh_port -j ACCEPT
+    sudo iptables -A OUTPUT -p tcp --sport $ssh_port -j ACCEPT
+
+    # 拒绝其他所有流量
+    sudo iptables -A INPUT -j DROP
+    sudo iptables -A OUTPUT -j DROP
+
+    echo "流量超限，已屏蔽所有连接，仅允许SSH连接。"
+fi
+EOF
+
+    # 授予脚本执行权限
+    sudo chmod +x /root/awsconfig/block_traffic.sh
+
+    # 设置定时任务，每5分钟执行一次检查
+    cron_job="*/5 * * * * /bin/bash /root/awsconfig/block_traffic.sh > /root/awsconfig/block_traffic_debug.log 2>&1"
+    (crontab -l | grep -Fxq "$cron_job") || (crontab -l; echo "$cron_job") | crontab -
+
+    echo "流量限额设置为（双向统计）：${traffic_limit}G"
+    echo "定时任务计划："
+    crontab -l
+    echo "iptables断网规则如下"
+    sudo iptables -L -n -v
+    echo "流量超限时将屏蔽所有连接，仅保留SSH连接。"
+    echo "查看定时任务，输入：crontab -l"
+    echo "超额流量数值保存文件 /root/awsconfig/traffic_limit_block.txt"
+    echo "实时检测脚本文件 /root/awsconfig/block_traffic.sh"
+    echo "实时流量数据储存文件 /root/awsconfig/block_traffic_debug.log"
+    echo "大功告成！断网脚本已安装并配置完成。"
+}
+
+
+restore_network() {
+    # 检查备份文件是否存在
+    if [ -f /root/awsconfig/iptables_backup.rules ]; then
+        # 恢复备份的iptables规则
+        sudo iptables-restore < /root/awsconfig/iptables_backup.rules
+        echo "网络连接已恢复。"
+    else
+        echo "找不到iptables规则的备份文件。无法恢复网络连接。"
+    fi
+}
+
 # 显示选项菜单
 echo "请选择操作："
-echo "1. 设置流量限额"
+echo "1. 限额流量关机"
 echo "2. 清零统计数据"
 echo "3. 查看本月流量"
 echo "4. 显示定时任务和配置"
 echo "5. 修改流量刷新日期"
 echo "6. 卸载脚本"
-echo -n "请输入选项 (1-6): "
+echo "7. 限额流量断网"
+echo "8. 恢复网络连接"
+echo -n "请输入选项 (1-8): "
 read choice
 
 case $choice in
@@ -199,6 +300,12 @@ case $choice in
         ;;
     6)
         uninstall_script
+        ;;
+    7)
+        block_traffic_except_ssh
+        ;;
+    8)
+        restore_network
         ;;
     *)
         echo "无效选项。"
