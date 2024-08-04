@@ -238,28 +238,27 @@ fi
 
 # 比较流量是否超过阈值
 if (( \$(echo "\$CHANGE_TO_GB > \$traffic_limit" | bc -l) )); then
-    # 检查是否已有特定的iptables规则
-    if sudo iptables -C INPUT -p tcp --dport \$ssh_port -j ACCEPT 2>/dev/null; then
-        echo "已检测到规则，不需要再次添加。"
-    else
-        echo "流量超限，开始更新iptables规则..."
+    echo "流量超限，开始更新iptables规则..."
 
-        # 备份现有iptables规则
-        sudo iptables-save > /root/awsconfig/iptables_backup.rules
+    # 备份现有iptables规则
+    sudo iptables-save > /root/awsconfig/iptables_backup.rules
 
-        # 清除所有规则
-        sudo iptables -F
+    # 清除所有规则
+    sudo iptables -F
 
-        # 允许SSH连接
-        sudo iptables -A INPUT -p tcp --dport \$ssh_port -j ACCEPT
-        sudo iptables -A OUTPUT -p tcp --sport \$ssh_port -j ACCEPT
+    # 获取SSH端口
+    ssh_port=$(ss -tnlp | grep sshd | awk '{print $4}' | sed 's/.*://')
+    [ -z "$ssh_port" ] && ssh_port=22
 
-        # 拒绝其他所有流量
-        sudo iptables -A INPUT -j DROP
-        sudo iptables -A OUTPUT -j DROP
+    # 允许SSH连接
+    sudo iptables -A INPUT -p tcp --dport $ssh_port -j ACCEPT
+    sudo iptables -A OUTPUT -p tcp --sport $ssh_port -j ACCEPT
 
-        echo "流量超限，已屏蔽所有连接，仅允许SSH连接。"
-    fi
+    # 拒绝其他所有流量
+    sudo iptables -A INPUT -j DROP
+    sudo iptables -A OUTPUT -j DROP
+
+    echo "流量超限，已屏蔽所有连接，仅允许SSH连接。"
 fi
 
 EOF
