@@ -293,43 +293,44 @@ restore_network() {
 
 # 显示选项菜单
 echo "请选择操作："
-echo "1. 限额流量关机"
+echo "1. 查看本月流量"
 echo "2. 清零统计数据"
-echo "3. 查看本月流量"
-echo "4. 显示定时任务和配置"
-echo "5. 修改流量刷新日期"
-echo "6. 卸载脚本"
-echo "7. 限额流量断网"
-echo "8. 恢复网络连接"
+echo "3. 限额流量关机"
+echo "4. 限额流量断网"
+echo "5. 恢复网络连接"
+echo "6. 显示定时任务和配置"
+echo "7. 修改流量刷新日期"
+echo "8. 卸载脚本"
 echo -n "请输入选项 (1-8): "
 read choice
 
 case $choice in
     1)
-        set_traffic_limit
+        view_monthly_traffic
         ;;
     2)
         clear_statistics
         ;;
     3)
-        view_monthly_traffic
+        set_traffic_limit
         ;;
     4)
-        show_configuration
-        ;;
-    5)
-        modify_billing_day
-        ;;
-    6)
-        uninstall_script
-        ;;
-    7)
         block_traffic_except_ssh
         ;;
-    8)
+    5)
         restore_network
+        ;;
+    6)
+        show_configuration
+        ;;
+    7)
+        modify_billing_day
+        ;;
+    8)
+        uninstall_script
         ;;
     *)
         echo "无效选项。"
         ;;
 esac
+
