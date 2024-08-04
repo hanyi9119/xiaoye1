@@ -268,6 +268,7 @@ EOF
     echo "流量限额设置为（双向统计）：${traffic_limit}G"
     echo "定时任务计划："
     crontab -l
+    echo "sudo iptables -L -n -v"
     echo "iptables断网规则如下"
     sudo iptables -L -n -v
     echo "流量超限时将屏蔽所有连接，仅保留SSH连接。"
