@@ -160,6 +160,7 @@ modify_billing_day() {
     else
         echo "输入无效。请输入1到31之间的数字。"
     fi
+
     #重启vnstat
     sudo systemctl enable vnstat
     sudo systemctl restart vnstat    
