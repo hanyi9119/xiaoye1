@@ -187,7 +187,7 @@ block_traffic_except_ssh() {
     fi
 
     echo $traffic_limit > /root/awsconfig/traffic_limit.txt
-    
+
     # 安装依赖/设置时区/安装流量监控软件vnstat
     sudo apt update
     sudo apt install -y timedatectl
@@ -204,7 +204,7 @@ block_traffic_except_ssh() {
     sudo systemctl restart vnstat    
 
     # 创建断网脚本
-    sudo tee /root/awsconfig/block_traffic.sh << EOF > /dev/null
+    sudo tee /root/awsconfig/block_traffic.sh << 'EOF' > /dev/null
 #!/bin/bash
 
 # 使用的环境变量
@@ -212,34 +212,34 @@ interface_name="$interface_name"
 traffic_limit=$(cat /root/awsconfig/traffic_limit.txt)
 
 # 获取SSH端口
-ssh_port=$(ss -tnlp | grep ':22 ' | awk '{print $4}' | sed 's/.*://')
+ssh_port=$(ss -tnlp | grep sshd | awk '{print $4}' | sed 's/.*://')
 if [ -z "$ssh_port" ]; then
     ssh_port=22  # 如果没有找到端口号，则默认为22
 fi
 
 # 更新网卡记录
-vnstat -i "\$interface_name"
+vnstat -i "$interface_name"
 
 # 获取每月用量
-TRAFF_USED=\$(vnstat --oneline b | awk -F';' '{print \$11}')
+TRAFF_USED=$(vnstat --oneline b | awk -F';' '{print $11}')
 
 # 检查是否获取到数据
-if [[ -z "\$TRAFF_USED" ]]; then
+if [[ -z "$TRAFF_USED" ]]; then
     echo "Error: Not enough data available yet."
     exit 1
 fi
 
 # 将流量转换为GB
-CHANGE_TO_GB=\$(echo "scale=2; \$TRAFF_USED / 1073741824" | bc)
+CHANGE_TO_GB=$(echo "scale=2; $TRAFF_USED / 1073741824" | bc)
 
 # 检查转换后的流量是否为有效数字
-if ! [[ "\$CHANGE_TO_GB" =~ ^[0-9]+([.][0-9]+)?\$ ]]; then
+if ! [[ "$CHANGE_TO_GB" =~ ^[0-9]+([.][0-9]+)?$ ]]; then
     echo "Error: Invalid traffic data."
     exit 1
 fi
 
 # 比较流量是否超过阈值
-if (( \$(echo "\$CHANGE_TO_GB > \$traffic_limit" | bc -l) )); then
+if (( $(echo "$CHANGE_TO_GB > $traffic_limit" | bc -l) )); then
     echo "流量超限，开始更新iptables规则..."
 
     # 备份现有iptables规则
@@ -281,6 +281,7 @@ EOF
     echo "实时流量数据储存文件：/root/awsconfig/block_traffic_debug.log"
     echo "大功告成！断网脚本已安装并配置完成。"
 }
+
 
 
 
