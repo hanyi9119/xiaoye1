@@ -140,13 +140,22 @@ EOF
     # 授予权限
     sudo chmod +x /root/awsconfig/check_internet.sh
 
-    # 4. 每隔5分钟检查一次
-    cron_job="*/5 * * * * /bin/bash /root/awsconfig/check_internet.sh"
+    # 设置定时任务，每5分钟执行一次检查
+    cron_job="*/5 * * * * /bin/bash /root/awsconfig/check_internet.sh > /root/awsconfig/shutdown_debug.log 2>&1"
+    # 检查当前crontab中是否已存在该任务，如果不存在则添加
+    (crontab -l 2>/dev/null | grep -Fxq "$cron_job") || (echo "$cron_job" | crontab -)
 
-    # 5. 添加定时任务
-    (crontab -l | grep -Fxq "$cron_job") || (echo "$cron_job" | crontab -)
-
-    echo "流量限额设置完成，自动断网脚本已创建并计划每5分钟执行一次。"
+    echo "流量限额设置为（双向统计）：${traffic_limit}G"
+    echo "定时任务计划："
+    crontab -l
+    echo "月度流量刷新日期MonthRotate的值："
+    sed -n '/MonthRotate/ p' /etc/vnstat.conf
+    echo "查看流量数据, 输入：vnstat"
+    echo "查看定时任务，输入：crontab -l"
+    echo "超额流量数值保存文件 /root/awsconfig/traffic_limit.txt"
+    echo "实时流量数据储存文件 /root/awsconfig/shutdown_debug.log"
+    echo "实时检测脚本文件 /root/awsconfig/check_internet.sh"
+    echo "大功告成！脚本已安装并配置完成。"
 }
 
 
