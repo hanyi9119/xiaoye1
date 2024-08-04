@@ -184,9 +184,9 @@ block_traffic_except_ssh() {
 
     echo $traffic_limit > /root/awsconfig/traffic_limit_block.txt
     
-    # 安装依赖/设置市区/安装流量监控软件vnstat
+    # 安装依赖/设置时区/安装流量监控软件vnstat
     sudo apt update
-    sudo apt install  -y timedatectl
+    sudo apt install -y timedatectl
     sudo timedatectl set-timezone Asia/Hong_Kong
     sudo apt install cron vnstat bc -y
 
@@ -198,9 +198,6 @@ block_traffic_except_ssh() {
     # 重启vnstat服务
     sudo systemctl enable vnstat
     sudo systemctl restart vnstat    
-    # 获取SSH端口
-    ssh_port=$(ss -tnlp | grep sshd | awk '{print $4}' | sed 's/.*://')
-    [ -z "$ssh_port" ] && ssh_port=22
 
     # 创建断网脚本
     cat << EOF | sudo tee /root/awsconfig/block_traffic.sh > /dev/null
@@ -209,6 +206,10 @@ block_traffic_except_ssh() {
 # 使用的环境变量
 interface_name="$interface_name"
 traffic_limit=\$(cat /root/awsconfig/traffic_limit_block.txt)
+
+# 获取SSH端口
+ssh_port=$(ss -tnlp | grep sshd | awk '{print $4}' | sed 's/.*://')
+[ -z "$ssh_port" ] && ssh_port=22
 
 # 更新网卡记录
 vnstat -i "\$interface_name"
@@ -275,6 +276,7 @@ EOF
     echo "实时流量数据储存文件 /root/awsconfig/block_traffic_debug.log"
     echo "大功告成！断网脚本已安装并配置完成。"
 }
+
 
 
 restore_network() {
