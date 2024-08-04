@@ -212,8 +212,10 @@ interface_name="$interface_name"
 traffic_limit=$(cat /root/awsconfig/traffic_limit.txt)
 
 # 获取SSH端口
-ssh_port=\$(ss -tnlp | grep sshd | awk '{print \$4}' | sed 's/.*://')
-[ -z "\$ssh_port" ] && ssh_port=22
+ssh_port=$(ss -tnlp | grep ':22 ' | awk '{print $4}' | sed 's/.*://')
+if [ -z "$ssh_port" ]; then
+    ssh_port=22  # 如果没有找到端口号，则默认为22
+fi
 
 # 更新网卡记录
 vnstat -i "\$interface_name"
