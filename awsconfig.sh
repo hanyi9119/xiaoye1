@@ -91,7 +91,8 @@ EOF
     echo "查看定时任务，输入：crontab -l"
     echo "超额流量数值保存文件 /root/awsconfig/traffic_limit.txt"
     echo "实时流量数据储存文件 /root/awsconfig/shutdown_debug.log"
-    echo "实时检测脚本文件 /root/awsconfig/check.sh"
+    echo "关机脚本文件 /root/awsconfig/check.sh"    
+    echo "断网脚本文件 /root/awsconfig/block_traffic.sh"
     echo "大功告成！脚本已安装并配置完成。"
 }
 
