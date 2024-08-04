@@ -172,6 +172,7 @@ uninstall_script() {
     echo "脚本及相关组件已卸载。"
 }
 
+
 block_traffic_except_ssh() {
     echo -n "请输入流量限额（GB）："
     read traffic_limit
@@ -208,8 +209,8 @@ interface_name="$interface_name"
 traffic_limit=\$(cat /root/awsconfig/traffic_limit_block.txt)
 
 # 获取SSH端口
-ssh_port=$(ss -tnlp | grep sshd | awk '{print $4}' | sed 's/.*://')
-[ -z "$ssh_port" ] && ssh_port=22
+ssh_port=\$(ss -tnlp | grep sshd | awk '{print \$4}' | sed 's/.*://')
+[ -z "\$ssh_port" ] && ssh_port=22
 
 # 更新网卡记录
 vnstat -i "\$interface_name"
@@ -235,7 +236,7 @@ fi
 # 比较流量是否超过阈值
 if (( \$(echo "\$CHANGE_TO_GB > \$traffic_limit" | bc -l) )); then
     # 检查是否已有特定的iptables规则
-    if sudo iptables -L INPUT | grep -q "tcp dpt:$ssh_port"; then
+    if sudo iptables -L INPUT | grep -q "tcp dpt:\$ssh_port"; then
         echo "已检测到规则，不需要再次添加。"
     else
         # 备份现有iptables规则
@@ -245,8 +246,8 @@ if (( \$(echo "\$CHANGE_TO_GB > \$traffic_limit" | bc -l) )); then
         sudo iptables -F
 
         # 允许SSH连接
-        sudo iptables -A INPUT -p tcp --dport $ssh_port -j ACCEPT
-        sudo iptables -A OUTPUT -p tcp --sport $ssh_port -j ACCEPT
+        sudo iptables -A INPUT -p tcp --dport \$ssh_port -j ACCEPT
+        sudo iptables -A OUTPUT -p tcp --sport \$ssh_port -j ACCEPT
 
         # 拒绝其他所有流量
         sudo iptables -A INPUT -j DROP
@@ -262,7 +263,7 @@ EOF
 
     # 设置定时任务，每5分钟执行一次检查
     cron_job="*/5 * * * * /bin/bash /root/awsconfig/block_traffic.sh > /root/awsconfig/block_traffic_debug.log 2>&1"
-    (crontab -l | grep -Fxq "$cron_job") || (crontab -l; echo "$cron_job") | crontab -
+    (crontab -l 2>/dev/null | grep -Fxq "$cron_job") || (crontab -l 2>/dev/null; echo "$cron_job") | crontab -
 
     echo "流量限额设置为（双向统计）：${traffic_limit}G"
     echo "定时任务计划："
