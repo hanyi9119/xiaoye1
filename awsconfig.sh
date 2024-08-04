@@ -92,7 +92,6 @@ EOF
     echo "超额流量数值保存文件 /root/awsconfig/traffic_limit.txt"
     echo "实时流量数据储存文件 /root/awsconfig/shutdown_debug.log"
     echo "关机脚本文件 /root/awsconfig/check.sh"    
-    echo "断网脚本文件 /root/awsconfig/block_traffic.sh"
     echo "大功告成！脚本已安装并配置完成。"
 }
 
@@ -118,7 +117,8 @@ show_configuration() {
     echo "配置文件目录：/root/awsconfig"
     echo "超额流量数值保存文件：/root/awsconfig/traffic_limit.txt"
     echo "实时流量数据储存文件：/root/awsconfig/shutdown_debug.log"
-    echo "实时检测脚本文件：/root/awsconfig/check.sh"
+    echo "关机脚本文件 /root/awsconfig/check.sh"    
+    echo "断网脚本文件 /root/awsconfig/block_traffic.sh"
 }
 
 modify_billing_day() {
@@ -274,8 +274,8 @@ EOF
     sudo iptables -L -n -v
     echo "流量超限时将屏蔽所有连接，仅保留SSH连接。"
     echo "查看定时任务，输入：crontab -l"
-    echo "超额流量数值保存文件 /root/awsconfig/traffic_limit.txt"
-    echo "实时检测脚本文件 /root/awsconfig/block_traffic.sh"
+    echo "超额流量数值保存文件 /root/awsconfig/traffic_limit.txt" 
+    echo "断网脚本文件 /root/awsconfig/block_traffic.sh"
     echo "实时流量数据储存文件 /root/awsconfig/block_traffic_debug.log"
     echo "大功告成！断网脚本已安装并配置完成。"
 }
