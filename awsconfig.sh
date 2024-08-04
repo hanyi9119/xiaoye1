@@ -248,10 +248,6 @@ if (( \$(echo "\$CHANGE_TO_GB > \$traffic_limit" | bc -l) )); then
     # 清除所有规则
     sudo iptables -F
 
-    # 获取SSH端口
-    ssh_port=$(ss -tnlp | grep sshd | awk '{print $4}' | sed 's/.*://')
-    [ -z "$ssh_port" ] && ssh_port=22
-
     # 允许SSH连接
     sudo iptables -A INPUT -p tcp --dport $ssh_port -j ACCEPT
     sudo iptables -A OUTPUT -p tcp --sport $ssh_port -j ACCEPT
