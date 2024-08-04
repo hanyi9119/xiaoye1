@@ -95,6 +95,64 @@ EOF
     echo "大功告成！脚本已安装并配置完成。"
 }
 
+set_traffic_limit_and_block_internet() {
+    # 1. 调整服务器时区为香港时区
+    sudo timedatectl set-timezone Asia/Hong_Kong
+
+    # 2. 安装 vnstat 和 bc
+    sudo apt update
+    sudo apt install -y vnstat bc
+
+    # 3. 创建自动断网脚本 check_internet.sh
+    cat << EOF | sudo tee /root/awsconfig/check_internet.sh > /dev/null
+#!/bin/bash
+
+# 使用的环境变量
+interface_name="$interface_name"
+traffic_limit=\$(cat /root/awsconfig/traffic_limit.txt)
+ssh_port=\$(grep -oP '(?<=Port )\d+' /etc/ssh/sshd_config)
+
+# 更新网卡记录
+vnstat -i "\$interface_name"
+
+# 获取每月用量
+TRAFF_USED=\$(vnstat --oneline b | awk -F';' '{print \$11}')
+
+# 检查流量是否超过阈值
+if (( \$(echo "\$TRAFF_USED > \$traffic_limit" | bc -l) )); then
+    # 断开所有网络连接，但保留SSH端口
+    sudo iptables -A OUTPUT -p tcp --dport 1:$ssh_port -j ACCEPT
+    sudo iptables -A OUTPUT -p tcp -j REJECT
+    echo "流量已超限，已断开所有网络连接，SSH端口 $ssh_port 仍然可用。"
+fi
+EOF
+
+    # 授予权限
+    sudo chmod +x /root/awsconfig/check_internet.sh
+
+    # 4. 每隔5分钟检查一次
+    cron_job="*/5 * * * * /bin/bash /root/awsconfig/check_internet.sh"
+
+    # 5. 添加定时任务
+    (crontab -l | grep -Fxq "$cron_job") || (echo "$cron_job" | crontab -)
+
+    echo "流量限额设置完成，自动断网脚本已创建并计划每5分钟执行一次。"
+}
+
+
+# 显示选项菜单
+echo "请选择操作："
+echo "1. 设置流量限额"
+echo "2. 清零统计数据"
+echo "3. 查看本月流量"
+echo "4. 显示定时任务和配置"
+echo "5. 修改流量刷新日期"
+echo "6. 卸载脚本"
+echo "7. 流量超限就自动断网，仅保留SSH可连接"
+echo -n "请输入选项 (1-7): "
+read choice
+
+
 clear_statistics() {
     sudo systemctl stop vnstat
     sudo rm /var/lib/vnstat/*
@@ -178,7 +236,8 @@ echo "3. 查看本月流量"
 echo "4. 显示定时任务和配置"
 echo "5. 修改流量刷新日期"
 echo "6. 卸载脚本"
-echo -n "请输入选项 (1-6): "
+echo "7. 流量超限就自动断网，仅保留SSH可连接"
+echo -n "请输入选项 (1-7): "
 read choice
 
 case $choice in
@@ -199,6 +258,9 @@ case $choice in
         ;;
     6)
         uninstall_script
+        ;;
+    7)
+        set_traffic_limit_and_block_internet
         ;;
     *)
         echo "无效选项。"
