@@ -246,6 +246,15 @@ fi
 if (( $(echo "$CHANGE_TO_GB > $traffic_limit" | bc -l) )); then
     echo "流量超限，开始更新iptables规则..."
 
+    # 检查备份文件是否存在
+    if [ -f "/root/awsconfig/iptables_backup.rules" ]; then
+       echo "备份文件已存在，不再重新备份。"
+    else
+       echo "没有找到备份文件，正在创建备份..."
+       sudo iptables-save > /root/awsconfig/iptables_backup.rules
+    echo "备份已创建：/root/awsconfig/iptables_backup.rules"
+    fi
+
     # 备份现有iptables规则
     sudo iptables-save > /root/awsconfig/iptables_backup.rules
 
