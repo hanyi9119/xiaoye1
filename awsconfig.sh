@@ -183,7 +183,21 @@ block_traffic_except_ssh() {
     fi
 
     echo $traffic_limit > /root/awsconfig/traffic_limit_block.txt
+    
+    # 安装依赖/设置市区/安装流量监控软件vnstat
+    sudo apt update
+    sudo apt install  -y timedatectl
+    sudo timedatectl set-timezone Asia/Hong_Kong
+    sudo apt install cron vnstat bc -y
 
+    # 配置vnstat，使用自动获取的网络接口名称
+    sudo sed -i "s/^Interface.*/Interface $interface_name/" /etc/vnstat.conf
+    sudo sed -i "s/^# *UnitMode.*/UnitMode 1/" /etc/vnstat.conf
+    sudo sed -i "s/^# *MonthRotate.*/MonthRotate 1/" /etc/vnstat.conf
+
+    # 重启vnstat服务
+    sudo systemctl enable vnstat
+    sudo systemctl restart vnstat    
     # 获取SSH端口
     ssh_port=$(ss -tnlp | grep sshd | awk '{print $4}' | sed 's/.*://')
     [ -z "$ssh_port" ] && ssh_port=22
@@ -219,21 +233,26 @@ fi
 
 # 比较流量是否超过阈值
 if (( \$(echo "\$CHANGE_TO_GB > \$traffic_limit" | bc -l) )); then
-    # 备份现有iptables规则
-    sudo iptables-save > /root/awsconfig/iptables_backup.rules
+    # 检查是否已有特定的iptables规则
+    if sudo iptables -L INPUT | grep -q "tcp dpt:$ssh_port"; then
+        echo "已检测到规则，不需要再次添加。"
+    else
+        # 备份现有iptables规则
+        sudo iptables-save > /root/awsconfig/iptables_backup.rules
 
-    # 清除所有规则
-    sudo iptables -F
+        # 清除所有规则
+        sudo iptables -F
 
-    # 允许SSH连接
-    sudo iptables -A INPUT -p tcp --dport $ssh_port -j ACCEPT
-    sudo iptables -A OUTPUT -p tcp --sport $ssh_port -j ACCEPT
+        # 允许SSH连接
+        sudo iptables -A INPUT -p tcp --dport $ssh_port -j ACCEPT
+        sudo iptables -A OUTPUT -p tcp --sport $ssh_port -j ACCEPT
 
-    # 拒绝其他所有流量
-    sudo iptables -A INPUT -j DROP
-    sudo iptables -A OUTPUT -j DROP
+        # 拒绝其他所有流量
+        sudo iptables -A INPUT -j DROP
+        sudo iptables -A OUTPUT -j DROP
 
-    echo "流量超限，已屏蔽所有连接，仅允许SSH连接。"
+        echo "流量超限，已屏蔽所有连接，仅允许SSH连接。"
+    fi
 fi
 EOF
 
