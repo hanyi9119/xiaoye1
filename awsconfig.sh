@@ -83,7 +83,7 @@ EOF
     (crontab -l | grep -Fxq "$cron_job") || (crontab -l; echo "$cron_job") | crontab -
 
     echo "流量限额设置为（双向统计）：${traffic_limit}G"
-    echo "定时任务计划："
+    echo "定时任务计划：crontab -l"
     crontab -l
     echo "月度流量刷新日期MonthRotate的值："
     sed -n '/MonthRotate/ p' /etc/vnstat.conf
@@ -108,10 +108,9 @@ view_monthly_traffic() {
 
 show_configuration() {
     echo "当前流量限额为（双向统计）: $(cat /root/awsconfig/traffic_limit.txt) GB"
-    echo "定时任务计划："
+    echo "定时任务计划：crontab -l"
     crontab -l
     echo "iptables规则查询：sudo iptables -L -n -v"      
-    echo "iptables断网规则如下"
     sudo iptables -L -n -v
     echo "月度流量刷新日期MonthRotate的值："
     sed -n '/MonthRotate/ p' /etc/vnstat.conf
@@ -280,10 +279,9 @@ EOF
     (crontab -l 2>/dev/null | grep -Fxq "$cron_job") || (crontab -l 2>/dev/null; echo "$cron_job") | crontab -
 
     echo "流量限额设置为（双向统计）：${traffic_limit}G"
-    echo "定时任务计划："
+    echo "定时任务计划：crontab -l"
     crontab -l
     echo "iptables规则查询：sudo iptables -L -n -v"      
-    echo "iptables断网规则如下"
     sudo iptables -L -n -v
     echo "流量超限时将屏蔽所有连接，仅保留SSH连接。"
     echo "查看定时任务，输入：crontab -l"
@@ -314,7 +312,7 @@ restore_network() {
 # 显示选项菜单
 echo "请选择操作：限额流量关机/限额流量断网 二选一"
 echo "1. 查看本月流量"
-echo "2. 清零统计数据"
+echo "2. 清零流量数据"
 echo "3. 限额流量关机"
 echo "4. 限额流量断网"
 echo "5. 恢复网络连接"
