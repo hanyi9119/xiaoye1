@@ -216,7 +216,7 @@ interface_name="$interface_name"
 traffic_limit=$(cat /root/awsconfig/traffic_limit.txt)
 
 # 获取SSH端口
-ssh_port=$(ss -tnlp | grep sshd | awk '{print $4}' | sed 's/.*://')
+ssh_port=$(grep '^Port ' /etc/ssh/sshd_config | awk '{print $2}')
 if [ -z "$ssh_port" ]; then
     ssh_port=22  # 如果没有找到端口号，则默认为22
 fi
