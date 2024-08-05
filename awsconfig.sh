@@ -301,6 +301,8 @@ restore_network() {
     if [ -f /root/awsconfig/iptables_backup.rules ]; then
         # 恢复备份的iptables规则
         sudo iptables-restore < /root/awsconfig/iptables_backup.rules
+        # 删除备份的iptables规则文件
+        rm -f /root/awsconfig/iptables_backup.rules
         echo "iptables规则已恢复,建议重启一下：reboot"
     else
         echo "找不到iptables规则的备份文件。无法恢复网络连接。"
