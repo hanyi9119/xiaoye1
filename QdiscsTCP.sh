@@ -17,7 +17,7 @@ if ! command -v iptables &> /dev/null; then
 fi
 
 # 获取所有网络接口的名称
-interfaces=$(nmcli device status | awk '{print $1}' | grep -v DEVICE)
+interfaces=$(route | grep default | awk '{print $8}')
 
 # 提示用户输入带宽值（单位：Mbps），并验证输入是否为有效的数字
 while true; do
