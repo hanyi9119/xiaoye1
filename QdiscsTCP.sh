@@ -16,9 +16,11 @@ apt install -y iptables network-manager ethtool
 
 # 确保 ifb0 设备存在
 echo "确保 ifb0 设备存在..."
-sudo modprobe ifb
-sudo ip link add ifb0 type ifb
-sudo ip link set ifb0 up
+if ! ip link show ifb0 &> /dev/null; then
+    sudo modprobe ifb
+    sudo ip link add ifb0 type ifb
+    sudo ip link set ifb0 up
+fi
 
 # 获取主网卡接口名称（假设接口名称以 eth 开头）
 interfaces=$(ip -o link show | awk -F': ' '{print $2}' | grep '^eth')
@@ -45,6 +47,10 @@ sudo iptables-save > "$backup_dir/iptables_backup.txt"
 
 # 循环遍历每个网络接口
 for interface in $interfaces; do
+    # 删除现有的 tc 配置
+    echo "删除现有的 tc 配置 (如果存在) ..."
+    sudo tc qdisc del dev $interface root 2>/dev/null
+
     # 调整网络队列处理算法（Qdiscs），优化TCP重传次数
     echo "Tuning network queue disciplines (Qdiscs) and TCP retransmission for interface $interface..."
     sudo tc qdisc add dev $interface root fq
