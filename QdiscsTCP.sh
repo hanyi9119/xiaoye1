@@ -64,7 +64,8 @@ for interface in $interfaces; do
         echo "计算出的 maxrate 值：$maxrate"
         echo "Setting maxrate to $maxrate..."
         sudo tc qdisc change dev $interface root fq maxrate $maxrate
-        sudo tc qdisc change dev $interface root fq burst 20k
+        # 使用字节作为 burst 参数的单位
+        sudo tc qdisc change dev $interface root fq burst 20000
     else
         echo "无效的带宽输入，请输入一个数字。"
         exit 1
