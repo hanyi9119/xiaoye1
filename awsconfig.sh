@@ -112,6 +112,7 @@ show_configuration() {
     crontab -l
     echo "iptables规则查询：sudo iptables -L -n -v"      
     sudo iptables -L -n -v
+    sudo ip6tables -L -n -v
     echo "月度流量刷新日期MonthRotate的值："
     sed -n '/MonthRotate/ p' /etc/vnstat.conf
     echo "配置文件目录：/root/awsconfig"
@@ -296,6 +297,7 @@ EOF
     crontab -l
     echo "iptables规则查询：sudo iptables -L -n -v"      
     sudo iptables -L -n -v
+    sudo ip6tables -L -n -v
     echo "流量超限时将屏蔽所有连接，仅保留SSH连接。"
     echo "查看定时任务，输入：crontab -l"
     echo "超额流量数值保存文件：/root/awsconfig/traffic_limit.txt" 
