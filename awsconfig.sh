@@ -313,6 +313,7 @@ restore_network() {
         # 检查备份文件是否存在
     if [ -f /root/awsconfig/iptables_backup.rules ]; then
         # 恢复备份的iptables规则
+	sudo iptables -F
         sudo iptables-restore < /root/awsconfig/iptables_backup.rules
         # 删除备份的iptables规则文件
         rm -f /root/awsconfig/iptables_backup.rules
@@ -326,11 +327,12 @@ restore_network() {
 	    # 检查备份文件是否存在
     if [ -f /root/awsconfig/ip6tables_backup.rules ]; then
         # 恢复备份的ip6tables规则
-		sudo ip6tables-restore < /root/awsconfig/ip6tables_backup.rules
+        sudo ip6tables -F
+	sudo ip6tables-restore < /root/awsconfig/ip6tables_backup.rules
         # 删除备份的iptables规则文件
-		rm -f /root/awsconfig/ip6tables_backup.rules
+	rm -f /root/awsconfig/ip6tables_backup.rules
         #输出恢复后的iptables规则
-		sudo ip6tables -L -n -v
+	sudo ip6tables -L -n -v
         echo "ip6tables规则已恢复，网络已恢复,建议重启一下：reboot"
     else
         echo "找不到ip6tables规则的备份文件。无法恢复网络连接。"
