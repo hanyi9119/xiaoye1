@@ -312,7 +312,7 @@ EOF
 restore_network() {
         # 检查备份文件是否存在
     if [ -f /root/awsconfig/iptables_backup.rules ]; then
-        # 恢复备份的iptables规则
+        # 清空和恢复备份的iptables规则
 	sudo iptables -F
         sudo iptables-restore < /root/awsconfig/iptables_backup.rules
         # 删除备份的iptables规则文件
@@ -326,7 +326,7 @@ restore_network() {
 	
 	    # 检查备份文件是否存在
     if [ -f /root/awsconfig/ip6tables_backup.rules ]; then
-        # 恢复备份的ip6tables规则
+        # 清空和恢复备份的ip6tables规则
         sudo ip6tables -F
 	sudo ip6tables-restore < /root/awsconfig/ip6tables_backup.rules
         # 删除备份的iptables规则文件
