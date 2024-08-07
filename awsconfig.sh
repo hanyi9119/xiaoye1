@@ -259,7 +259,7 @@ if (( $(echo "$CHANGE_TO_GB > $traffic_limit" | bc -l) )); then
        echo "备份文件已存在，不再重新备份。"
     else
           echo "没有找到备份文件，正在创建备份..."
-          sudo iptables-save > /root/awsconfig/ip6tables_backup.rules
+          sudo ip6tables-save > /root/awsconfig/ip6tables_backup.rules
        echo "备份已创建：/root/awsconfig/ip6tables_backup.rules"
     fi
 
@@ -270,13 +270,13 @@ if (( $(echo "$CHANGE_TO_GB > $traffic_limit" | bc -l) )); then
     # 允许SSH连接
     sudo iptables -A INPUT -p tcp --dport $ssh_port -j ACCEPT
     sudo iptables -A OUTPUT -p tcp --sport $ssh_port -j ACCEPT
-	sudo ip6tables -A INPUT -p tcp --dport $ssh_port -j ACCEPT
+    sudo ip6tables -A INPUT -p tcp --dport $ssh_port -j ACCEPT
     sudo ip6tables -A OUTPUT -p tcp --sport $ssh_port -j ACCEPT
 
     # 拒绝其他所有流量
     sudo iptables -A INPUT -j DROP
     sudo iptables -A OUTPUT -j DROP
-	sudo ip6tables -A INPUT -j DROP
+    sudo ip6tables -A INPUT -j DROP
     sudo ip6tables -A OUTPUT -j DROP
 
     echo "流量超限，已屏蔽所有连接，仅允许SSH连接。"
