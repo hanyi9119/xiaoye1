@@ -207,6 +207,30 @@ block_traffic_except_ssh() {
     sudo systemctl enable vnstat
     sudo systemctl restart vnstat    
 
+    # 定义配置文件路径
+    SSH_CONFIG="/etc/ssh/sshd_config"
+
+    # 检查并添加 IPv4 监听地址（如果未找到未注释的行）
+    if ! grep -q "^ListenAddress 0.0.0.0" "$SSH_CONFIG"; then
+        echo "添加 IPv4 监听地址到 SSH 配置..."
+        echo "ListenAddress 0.0.0.0" >> "$SSH_CONFIG"
+    fi
+
+    # 检查并添加 IPv6 监听地址（如果未找到未注释的行）
+    if ! grep -q "^ListenAddress ::" "$SSH_CONFIG"; then
+       echo "添加 IPv6 监听地址到 SSH 配置..."
+       echo "ListenAddress ::" >> "$SSH_CONFIG"
+    fi
+
+    # 如果进行了添加操作，则重启 SSH 服务以应用更改
+    if [ -s "$SSH_CONFIG" ]; then
+        echo "重启 SSH 服务..."
+        sudo systemctl restart sshd
+        echo "脚本执行完成。"
+    else
+        echo "配置文件未修改，无需重启 SSH 服务。"
+    fi
+
     # 创建断网脚本
     sudo tee /root/awsconfig/block_traffic.sh << 'EOF' > /dev/null
 #!/bin/bash
