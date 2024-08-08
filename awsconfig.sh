@@ -207,8 +207,18 @@ block_traffic_except_ssh() {
     sudo systemctl enable vnstat
     sudo systemctl restart vnstat    
 
+
+
     # 定义配置文件路径
     SSH_CONFIG="/etc/ssh/sshd_config"
+
+    # 检查 AddressFamily 是否设置为 any（未注释）
+    if ! grep -qE "^AddressFamily any" "$SSH_CONFIG" && ! grep -qE "^#AddressFamily any" "$SSH_CONFIG"; then
+        echo "添加或取消注释 AddressFamily any 到 SSH 配置..."
+        # 取消注释 AddressFamily any（如果存在），或者添加它
+        sed -i '/^AddressFamily /s/^#//' "$SSH_CONFIG" 2>/dev/null
+        grep -qE "^AddressFamily " "$SSH_CONFIG" || echo -e "AddressFamily any" >> "$SSH_CONFIG"
+    fi
 
     # 检查并添加 IPv4 监听地址（如果未找到未注释的行）
     if ! grep -q "^ListenAddress 0.0.0.0" "$SSH_CONFIG"; then
@@ -230,6 +240,7 @@ block_traffic_except_ssh() {
     else
         echo "配置文件未修改，无需重启 SSH 服务。"
     fi
+
 
     # 创建断网脚本
     sudo tee /root/awsconfig/block_traffic.sh << 'EOF' > /dev/null
