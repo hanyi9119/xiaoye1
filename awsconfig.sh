@@ -298,8 +298,9 @@ if (( $(echo "$CHANGE_TO_GB > $traffic_limit" | bc -l) )); then
     fi
 
     # 清除所有规则
-    sudo iptables -F
-    sudo ip6tables -F
+    sudo iptables -X && sudo iptables -F
+    sudo ip6tables -X && sudo ip6tables -F
+
 	
     # 允许SSH连接
     sudo iptables -A INPUT -p tcp --dport $ssh_port -j ACCEPT
@@ -346,7 +347,7 @@ restore_network() {
         # 检查备份文件是否存在
     if [ -f /root/awsconfig/iptables_backup.rules ]; then
         # 清空和恢复备份的iptables规则
-	sudo iptables -F
+	sudo iptables -F && sudo iptables -X
         sudo iptables-restore < /root/awsconfig/iptables_backup.rules
         # 删除备份的iptables规则文件
         rm -f /root/awsconfig/iptables_backup.rules
@@ -360,7 +361,7 @@ restore_network() {
 	    # 检查备份文件是否存在
     if [ -f /root/awsconfig/ip6tables_backup.rules ]; then
         # 清空和恢复备份的ip6tables规则
-        sudo ip6tables -F
+	sudo ip6tables -F && sudo ip6tables -X
 	sudo ip6tables-restore < /root/awsconfig/ip6tables_backup.rules
         # 删除备份的iptables规则文件
 	rm -f /root/awsconfig/ip6tables_backup.rules
