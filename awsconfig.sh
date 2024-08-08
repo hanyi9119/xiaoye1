@@ -213,11 +213,9 @@ block_traffic_except_ssh() {
     SSH_CONFIG="/etc/ssh/sshd_config"
 
     # 检查 AddressFamily 是否设置为 any（未注释）
-    if ! grep -qE "^AddressFamily any" "$SSH_CONFIG" && ! grep -qE "^#AddressFamily any" "$SSH_CONFIG"; then
-        echo "添加或取消注释 AddressFamily any 到 SSH 配置..."
-        # 取消注释 AddressFamily any（如果存在），或者添加它
-        sed -i '/^AddressFamily /s/^#//' "$SSH_CONFIG" 2>/dev/null
-        grep -qE "^AddressFamily " "$SSH_CONFIG" || echo -e "AddressFamily any" >> "$SSH_CONFIG"
+    if ! grep -q "^AddressFamily any" "$SSH_CONFIG"; then
+        echo "添加 IPv4 监听地址到 SSH 配置..."
+        echo "AddressFamily any" >> "$SSH_CONFIG"
     fi
 
     # 检查并添加 IPv4 监听地址（如果未找到未注释的行）
