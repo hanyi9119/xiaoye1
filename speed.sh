@@ -56,7 +56,7 @@ check_ipv6() {
 _print_banner_1() {
     echo "------------------------ 多功能      测速脚本 ------------------------"
     echo -e " Version               : ${green}${script_version}${endc}"
-    echo -e " Usage                 : ${yellow}bash <(curl -sL res.yserver.ink/taier.sh)${endc}"
+    echo -e " Usage                 : ${yellow}bash <(curl -sL https://raw.githubusercontent.com/hanyi9119/xiaoye1/master/speed.sh)${endc}"
     #echo -e " GitHub                : ${green}https://github.com/i-abc/speedtest${endc}"
     printf "%-72s\n" "-" | sed 's)\s)-)g'
 }
@@ -64,7 +64,7 @@ _print_banner_1() {
 _print_banner_2() {
     echo "------------------------ 多功能 自更新 测速脚本 ------------------------"
     echo -e " Version               : ${green}${script_version}${endc}"
-    echo -e " Usage                 : ${yellow}bash <(curl -sL res.yserver.ink/taier.sh)${endc}"
+    echo -e " Usage                 : ${yellow}bash <(curl -sL https://raw.githubusercontent.com/hanyi9119/xiaoye1/master/speed.sh)${endc}"
     echo -e " Node                  : ${blue}${node_name}${endc}"
     printf "%-72s\n" "-" | sed 's)\s)-)g'
 }
