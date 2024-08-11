@@ -108,4 +108,4 @@ iptables-save > /etc/iptables.up.rules
 
 # 输出所有规则
 sudo iptables -L -n -v
-echo "所有基本攻击缓解规则已应用完成，请检查iptables规则"
+echo "所有基本攻击缓解已应用,重启依然生效，请检查iptables规则"
