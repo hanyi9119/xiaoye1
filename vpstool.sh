@@ -50,6 +50,18 @@ if ! sudo iptables -C INPUT -p tcp --tcp-flags ALL ALL -j DROP 2>/dev/null; then
     echo "已添加规则：开启防止端口扫描 (ALL ALL)"
 fi
 
+# 防止XMAS攻击
+if ! sudo iptables -C INPUT -p tcp --tcp-flags ALL FIN,PSH,URG -j DROP 2>/dev/null; then
+    sudo iptables -A INPUT -p tcp --tcp-flags ALL FIN,PSH,URG -j DROP
+    echo "已添加规则：防止XMAS Tree攻击"
+fi
+
+# 跟踪连接状态
+if ! sudo iptables -C INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT 2>/dev/null; then
+    sudo iptables -A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
+    echo "已添加规则：状态检测，可以更精细地控制流量，防止半开连接"
+fi
+
 #保存iptables规则
 iptables-save > /etc/iptables.up.rules
 echo -e '#!/bin/bash\n/sbin/iptables-restore < /etc/iptables.up.rules' > /etc/network/if-pre-up.d/iptables
