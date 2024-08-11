@@ -28,23 +28,29 @@ fi
 
 
 
+# 定义一个固定的计数器名称
+recent_name="SSH_LIMIT"
+
+# 函数：添加规则如果它尚不存在
+add_rule_if_not_exists() {
+    local port=$1
+    local rule=$2
+    if ! sudo iptables -C INPUT -p tcp --dport "$port" $rule 2>/dev/null; then
+        echo "添加规则：$rule"
+        sudo iptables -A INPUT -p tcp --dport "$port" $rule
+    else
+        echo "规则已存在：$rule"
+    fi
+}
+
+
 # 检查并添加限制SSH连接次数规则
-recent_name="SSH_LIMIT"  # 定义一个固定的计数器名称
+set_rule="-m state --state NEW -m recent --name \"$recent_name\" --set"
+add_rule_if_not_exists "$SSH_PORT" "$set_rule"
 
-if ! sudo iptables-save | grep -q "^-A INPUT -p tcp -m state --state NEW -m recent --name $recent_name --set --rsource -j SET"; then
-    sudo iptables -A INPUT -p tcp --dport "$SSH_PORT" -m state --state NEW -m recent --name "$recent_name" --set --rsource
-    echo "已添加规则：限制SSH连接次数"
-else
-    echo "已添加限制SSH连接次数规则，不再重复添加"
-fi
-
-# 检查是否存在限制连接次数的规则
-if ! sudo iptables -C INPUT -p tcp --dport "$SSH_PORT" -m state --state NEW -m recent --name "$recent_name" --update --seconds 60 --hitcount 10 -j DROP 2>/dev/null; then
-    sudo iptables -A INPUT -p tcp --dport "$SSH_PORT" -m state --state NEW -m recent --name "$recent_name" --update --seconds 60 --hitcount 10 -j DROP
-    echo "已添加规则：SSH连接次数被限制为60秒内10次"
-else
-    echo "已添加SSH连接次数被限制为60秒内10次，不再重复添加"
-fi
+# 检查并添加限制连接次数的DROP规则
+drop_rule="-m state --state NEW -m recent --name \"$recent_name\" --update --seconds 60 --hitcount 10 -j DROP"
+add_rule_if_not_exists "$SSH_PORT" "$drop_rule"
 
 # 丢弃ping请求
 if ! sudo iptables -C INPUT -p icmp --icmp-type echo-request -j DROP 2>/dev/null; then
