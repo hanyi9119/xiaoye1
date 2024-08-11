@@ -16,6 +16,18 @@ fi
 echo "SSH端口号为：$SSH_PORT"
 echo "开始通过iptables进行基本的攻击缓解设置..."
 
+# 检查iptables备份文件是否存在
+if [ -f "/root/iptables_backup.rules" ]; then
+       echo "备份文件已存在，不再重新备份。"
+else
+          echo "没有找到备份文件，正在创建备份..."
+          sudo iptables-save > /root/iptables_backup.rules
+       echo "备份已创建：/root/iptables_backup.rules"
+       echo "恢复规则请使用：sudo iptables-restore < /root/iptables_backup.rules"
+fi
+
+
+
 # 限制SSH连接次数
 if ! sudo iptables -C INPUT -p tcp --dport "$SSH_PORT" -m state --state NEW -m recent --set 2>/dev/null; then
     sudo iptables -A INPUT -p tcp --dport "$SSH_PORT" -m state --state NEW -m recent --set
