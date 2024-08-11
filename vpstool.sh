@@ -31,12 +31,11 @@ fi
 # 检查并添加限制SSH连接次数规则
 recent_name="SSH_LIMIT"  # 定义一个固定的计数器名称
 
-# 检查是否存在设置recent的规则
-if ! sudo iptables -C INPUT -p tcp --dport "$SSH_PORT" -m state --state NEW -m recent --name "$recent_name" -j SET 2>/dev/null; then
-    sudo iptables -A INPUT -p tcp --dport "$SSH_PORT" -m state --state NEW -m recent --name "$recent_name" --set
-    echo "已添加规则：限制SSH连接次数，不再重复添加"
+if ! sudo iptables-save | grep -q "^-A INPUT -p tcp -m state --state NEW -m recent --name $recent_name --set --rsource -j SET"; then
+    sudo iptables -A INPUT -p tcp --dport "$SSH_PORT" -m state --state NEW -m recent --name "$recent_name" --set --rsource
+    echo "已添加规则：限制SSH连接次数"
 else
-    echo "已添加限制SSH连接次数规则，不再重复添加"
+    echo "已添加限制SSH连接次数规则，不再重复添加"
 fi
 
 # 检查是否存在限制连接次数的规则
