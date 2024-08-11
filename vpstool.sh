@@ -28,16 +28,20 @@ fi
 
 
 
-# 限制SSH连接次数
-if ! sudo iptables -C INPUT -p tcp --dport "$SSH_PORT" -m state --state NEW -m recent --set 2>/dev/null; then
-    sudo iptables -A INPUT -p tcp --dport "$SSH_PORT" -m state --state NEW -m recent --set
+# 检查并添加限制SSH连接次数规则
+recent_name="SSH_LIMIT"  # 定义一个固定的计数器名称
+
+# 检查是否存在设置recent的规则
+if ! sudo iptables -C INPUT -p tcp --dport "$SSH_PORT" -m state --state NEW -m recent --name "$recent_name" -j SET 2>/dev/null; then
+    sudo iptables -A INPUT -p tcp --dport "$SSH_PORT" -m state --state NEW -m recent --name "$recent_name" --set
     echo "已添加规则：限制SSH连接次数，不再重复添加"
 else
     echo "已添加限制SSH连接次数规则，不再重复添加"
 fi
 
-if ! sudo iptables -C INPUT -p tcp --dport "$SSH_PORT" -m state --state NEW -m recent --update --seconds 60 --hitcount 10 -j DROP 2>/dev/null; then
-    sudo iptables -A INPUT -p tcp --dport "$SSH_PORT" -m state --state NEW -m recent --update --seconds 60 --hitcount 10 -j DROP
+# 检查是否存在限制连接次数的规则
+if ! sudo iptables -C INPUT -p tcp --dport "$SSH_PORT" -m state --state NEW -m recent --name "$recent_name" --update --seconds 60 --hitcount 10 -j DROP 2>/dev/null; then
+    sudo iptables -A INPUT -p tcp --dport "$SSH_PORT" -m state --state NEW -m recent --name "$recent_name" --update --seconds 60 --hitcount 10 -j DROP
     echo "已添加规则：SSH连接次数被限制为60秒内10次"
 else
     echo "已添加SSH连接次数被限制为60秒内10次，不再重复添加"
