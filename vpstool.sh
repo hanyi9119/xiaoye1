@@ -99,6 +99,21 @@ else
     echo "已添加跟踪连接状态规则，不再重复添加"
 fi
 
+if ! sudo iptables -C INPUT -p tcp --syn -m limit --limit 1/s --limit-burst 3 -j ACCEPT 2>/dev/null; then
+    sudo iptables -A INPUT -p tcp --syn -m limit --limit 1/s --limit-burst 3 -j ACCEPT
+    echo "已添加规则：限制SYN-Flood攻击，syn连接被限制为每秒钟接受一个同一来源SYN请求，初始突发允许3个请求"
+else
+    echo "已添加限制SYN-Flood攻击规则，不再重复添加"
+fi
+
+if ! sudo iptables -C INPUT -m state --state INVALID -j DROP 2>/dev/null; then
+    sudo iptables -A INPUT -m state --state INVALID -j DROP
+    echo "已添加规则：丢弃无效包"
+else
+    echo "已添加丢弃无效包规则，不再重复添加"
+fi
+
+
 #保存iptables规则
 iptables-save > /etc/iptables.up.rules
 echo -e '#!/bin/bash\n/sbin/iptables-restore < /etc/iptables.up.rules' > /etc/network/if-pre-up.d/iptables
