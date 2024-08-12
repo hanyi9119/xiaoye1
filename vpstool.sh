@@ -113,6 +113,13 @@ else
     echo "已添加丢弃无效包规则，不再重复添加"
 fi
 
+if ! sudo iptables -C INPUT -p icmp --icmp-type address-mask-request -j DROP 2>/dev/null; then
+    sudo iptables -A INPUT -p icmp --icmp-type address-mask-request -j DROP
+    echo "已添加规则：防止Smurf攻击"
+else
+    echo "已添加防止Smurf攻击规则，不再重复添加"
+fi
+
 
 #保存iptables规则
 iptables-save > /etc/iptables.up.rules
