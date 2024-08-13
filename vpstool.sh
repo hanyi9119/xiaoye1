@@ -34,17 +34,17 @@ if ! dpkg -s fail2ban >/dev/null 2>&1; then
     sudo apt -y update
     sudo apt install -y fail2ban
     
-    # 书写fail2ban配置文件
-    sudo bash -c "cat <<EOF > /etc/fail2ban/jail.local
-    [sshd]
-    enabled = true
-    port = $SSH_PORT
-    filter = sshd
-    logpath = /var/log/auth.log
-    maxretry = 10
-    bantime = 3600
-    findtime = 600
-    EOF"
+# 书写fail2ban配置文件
+sudo bash -c "cat <<EOF > /etc/fail2ban/jail.local
+[sshd]
+enabled = true
+port = $SSH_PORT
+filter = sshd
+logpath = /var/log/auth.log
+maxretry = 10
+bantime = 3600
+findtime = 600
+EOF"
     
     #重启服务和检查服务状态
     sudo systemctl restart fail2ban
