@@ -40,7 +40,7 @@ if ! dpkg -s fail2ban >/dev/null 2>&1; then
 sudo bash -c "cat <<EOF > /etc/fail2ban/jail.local
 [sshd]
 enabled = true
-port = $SSH_PORT  # 不需要再加引号
+port = $SSH_PORT
 filter = sshd
 logpath = /var/log/auth.log
 maxretry = 3
