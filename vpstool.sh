@@ -33,8 +33,7 @@ if ! dpkg -s fail2ban >/dev/null 2>&1; then
     # 安装fail2ban
     sudo apt -y update
     sudo apt install -y fail2ban
-
-    echo "Fail2ban安装完成，开始写入配置：600秒同一个ip错误尝试10次就封禁一个小时"
+    
     # 书写fail2ban配置文件
     sudo bash -c "cat <<EOF > /etc/fail2ban/jail.local
     [sshd]
@@ -50,7 +49,7 @@ if ! dpkg -s fail2ban >/dev/null 2>&1; then
     sudo systemctl restart fail2ban
     sudo systemctl status fail2ban
     sudo systemctl is-active --quiet fail2ban && echo "Fail2ban 安装完成正在运行" || echo "Fail2ban 服务未运行"
-
+    echo "Fail2ban安装完成，已经写入配置：600秒内同一个ip错误尝试10次就封禁一个小时"
 else
     sudo systemctl status fail2ban
     sudo systemctl is-active --quiet fail2ban && echo "Fail2ban 服务正在运行" || echo "Fail2ban 服务未运行"
