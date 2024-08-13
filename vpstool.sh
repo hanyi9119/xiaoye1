@@ -30,11 +30,11 @@ fi
 # 检查Fail2ban是否已安装
 if ! dpkg -s fail2ban >/dev/null 2>&1; then
     echo "系统未安装Fail2ban，正在安装..."
-
     # 安装fail2ban
     sudo apt -y update
     sudo apt install -y fail2ban
     sudo systemctl status fail2ban
+    sudo systemctl is-active --quiet fail2ban && echo "Fail2ban 服务正在运行" || echo "Fail2ban 服务未运行"
 
     # 书写fail2ban配置文件
     sudo bash -c 'cat <<EOF > /etc/fail2ban/jail.local
@@ -48,6 +48,7 @@ bantime = 3600
 findtime = 600
 EOF'
 else
+    sudo systemctl is-active --quiet fail2ban && echo "Fail2ban 服务正在运行" || echo "Fail2ban 服务未运行"
     echo "系统已经安装Fail2ban，不再重复安装"
 fi
 
