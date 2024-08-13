@@ -54,8 +54,8 @@ fi
 
 # 跟踪连接状态
 if ! sudo iptables -C INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT 2>/dev/null; then
-    # 使用 -A 而不是 -I，因为我们想将这条规则添加到适当的位置
-    sudo iptables -A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
+    # 插入到第一条，因为我们希望这条规则首先被评估
+    sudo iptables -I INPUT 1 -m state --state ESTABLISHED,RELATED -j ACCEPT
     echo "已添加规则：状态检测，可以更精细地控制流量，防止半开连接"
 else
     echo "已添加跟踪连接状态规则，不再重复添加"
@@ -69,11 +69,13 @@ else
     echo "已添加开启防止端口扫描 (ALL NONE)，不再重复添加"
 fi
 
-if ! sudo iptables -C INPUT -p tcp --tcp-flags ALL ALL -j DROP 2>/dev/null; then
-    sudo iptables -A INPUT -p tcp --tcp-flags ALL ALL -j DROP
-    echo "已添加规则：开启防止端口扫描 (ALL ALL)"
+
+# 阻止无效的TCP标志组合
+if ! sudo iptables -C INPUT -p tcp --tcp-flags ALL FIN,RST,URG -j DROP 2>/dev/null; then
+    sudo iptables -A INPUT -p tcp --tcp-flags ALL FIN,RST,URG -j DROP
+    echo "已添加规则：阻止无效的TCP标志组合"
 else
-    echo "已添加开启防止端口扫描 (ALL ALL)，不再重复添加"
+    echo "阻止无效的TCP标志组合规则已存在，不再重复添加"
 fi
 
 #丢弃无效包
@@ -100,22 +102,20 @@ else
     echo "已添加开启防止SYN洪泛攻击，不再重复添加"
 fi
 
-# 防止XMAS攻击
-if ! sudo iptables -C INPUT -p tcp --tcp-flags ALL FIN,PSH,URG -j DROP 2>/dev/null; then
-    sudo iptables -A INPUT -p tcp --tcp-flags ALL FIN,PSH,URG -j DROP
-    echo "已添加规则：防止XMAS Tree攻击"
-else
-    echo "已添加防止XMAS Tree攻击已添加，不再重复添加"
-fi
-
-
-
 #限制SYN每秒钟接受一个同一来源SYN请求，初始突发允许3个请求
 if ! sudo iptables -C INPUT -p tcp --syn -m limit --limit 1/s --limit-burst 3 -j ACCEPT 2>/dev/null; then
     sudo iptables -A INPUT -p tcp --syn -m limit --limit 1/s --limit-burst 3 -j ACCEPT
     echo "已添加规则：限制SYN-Flood攻击，syn连接被限制为每秒钟接受一个同一来源SYN请求，初始突发允许3个请求"
 else
     echo "已添加限制SYN-Flood攻击规则，不再重复添加"
+fi
+
+# 防止XMAS攻击
+if ! sudo iptables -C INPUT -p tcp --tcp-flags ALL FIN,PSH,URG -j DROP 2>/dev/null; then
+    sudo iptables -A INPUT -p tcp --tcp-flags ALL FIN,PSH,URG -j DROP
+    echo "已添加规则：防止XMAS Tree攻击"
+else
+    echo "已添加防止XMAS Tree攻击已添加，不再重复添加"
 fi
 
 
