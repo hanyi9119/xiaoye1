@@ -124,6 +124,34 @@ else
 fi
 
 
+#去除重复的规则
+# 保存当前的 iptables 规则到一个临时文件
+sudo iptables-save > /tmp/iptables-rules.txt
+
+# 清空现有的 iptables 规则
+sudo iptables -F
+sudo iptables -X
+
+# 使用 awk 来处理规则文件，删除重复的规则
+# awk 脚本将检查每条规则是否已经添加到数组中
+awk '
+  BEGIN { RS=""; FS="\n"; OFS="\n" }
+  {
+    if (!seen[$0]) {
+      print $0;
+      seen[$0] = 1;
+    }
+  }
+' /tmp/iptables-rules.txt > /tmp/iptables-rules-cleaned.txt
+
+# 重新加载去重后的规则
+sudo iptables-restore < /tmp/iptables-rules-cleaned.txt
+
+# 清理临时文件
+rm /tmp/iptables-rules.txt /tmp/iptables-rules-cleaned.txt
+
+echo "重复的 iptables 规则已被删除并重新加载。"
+
 #保存iptables规则
 iptables-save > /etc/iptables.up.rules
 echo -e '#!/bin/bash\n/sbin/iptables-restore < /etc/iptables.up.rules' > /etc/network/if-pre-up.d/iptables
