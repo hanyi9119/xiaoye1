@@ -125,32 +125,43 @@ fi
 
 
 #去除重复的规则
-# 保存当前的 iptables 规则到一个临时文件
-sudo iptables-save > /tmp/iptables-rules.txt
+# 保存当前的 iptables 规则到文件
+iptables-save > /tmp/original-iptables-rules.txt
 
-# 清空现有的 iptables 规则
-sudo iptables -F
-sudo iptables -X
+# 创建一个数组来存储规则的哈希值
+declare -A rule_hashes
 
-# 使用 awk 来处理规则文件，删除重复的规则
-# awk 脚本将检查每条规则是否已经添加到数组中
-awk '
-  BEGIN { RS=""; FS="\n"; OFS="\n" }
-  {
-    if (!seen[$0]) {
-      print $0;
-      seen[$0] = 1;
-    }
-  }
-' /tmp/iptables-rules.txt > /tmp/iptables-rules-cleaned.txt
+# 临时文件用于存储去重后的规则
+output_file="/tmp/iptables-rules-cleaned.txt"
+> "$output_file"  # 清空文件内容
+
+# 读取原始规则文件，计算每条规则的哈希值，并存储
+while IFS= read -r line; do
+  # 跳过空行和注释行
+  [[ "$line" =~ ^#.*$ ]] || [[ -z "$line" ]] && continue
+  
+  # 计算规则的哈希值
+  rule_hash=$(echo "$line" | md5sum | awk '{print $1}')
+  
+  # 如果哈希值已存在，则说明找到了重复的规则
+  if [[ -n "${rule_hashes[$rule_hash]}" ]]; then
+    echo "找到重复的规则：$line"
+    # 此处不做处理，因为我们跳过重复的规则
+  else
+    rule_hashes["$rule_hash"]=1
+    # 将去重后的规则写入输出文件
+    echo "$line" >> "$output_file"
+  fi
+done < /tmp/original-iptables-rules.txt
 
 # 重新加载去重后的规则
-sudo iptables-restore < /tmp/iptables-rules-cleaned.txt
+iptables-restore < "$output_file"
 
 # 清理临时文件
-rm /tmp/iptables-rules.txt /tmp/iptables-rules-cleaned.txt
+rm /tmp/original-iptables-rules.txt "$output_file"
 
-echo "重复的 iptables 规则已被删除并重新加载。"
+echo "哈希值计算重复的 iptables 规则已被删除并重新加载。"
+
 
 #保存iptables规则
 iptables-save > /etc/iptables.up.rules
