@@ -14,7 +14,7 @@ if [ -z "$SSH_PORT" ]; then
 fi
 
 echo "SSH端口号为：$SSH_PORT"
-echo "开始通过iptables进行基本的攻击缓解设置..."
+echo "安装fail2ban,同时开始通过iptables进行攻击缓解设置..."
 
 # 检查iptables备份文件是否存在
 if [ -f "/root/iptables_backup.rules" ]; then
@@ -27,45 +27,37 @@ else
 fi
 
 
+# 检查Fail2ban是否已安装
+if ! dpkg -s fail2ban >/dev/null 2>&1; then
+    echo "系统未安装Fail2ban，正在安装..."
 
-# 定义一个固定的计数器名称
-recent_name="SSH_LIMIT"
+    # 安装fail2ban
+    sudo apt -y update
+    sudo apt install -y fail2ban
+    sudo systemctl status fail2ban
 
-# 函数：添加规则如果它尚不存在
-add_rule_if_not_exists() {
-    local port=$1
-    local rule=$2
-    if ! sudo iptables -C INPUT -p tcp --dport "$port" $rule 2>/dev/null; then
-        echo "添加规则：$rule"
-        sudo iptables -A INPUT -p tcp --dport "$port" $rule
-    else
-        echo "规则已存在：$rule"
-    fi
-}
-
-
-# 检查并添加限制SSH连接次数规则
-set_rule="-m state --state NEW -m recent --name \"$recent_name\" --set"
-add_rule_if_not_exists "$SSH_PORT" "$set_rule"
-
-# 检查并添加限制连接次数的DROP规则
-drop_rule="-m state --state NEW -m recent --name \"$recent_name\" --update --seconds 60 --hitcount 10 -j DROP"
-add_rule_if_not_exists "$SSH_PORT" "$drop_rule"
-
-# 丢弃ping请求
-if ! sudo iptables -C INPUT -p icmp --icmp-type echo-request -j DROP 2>/dev/null; then
-    sudo iptables -A INPUT -p icmp --icmp-type echo-request -j DROP
-    echo "已添加规则：丢弃所有的ping请求"
+    # 书写fail2ban配置文件
+    sudo bash -c 'cat <<EOF > /etc/fail2ban/jail.local
+[sshd]
+enabled = true
+port = $SSH_PORT
+filter = sshd
+logpath = /var/log/auth.log
+maxretry = 3
+bantime = 3600
+findtime = 600
+EOF'
 else
-    echo "已添加丢弃所有的ping请求，不再重复添加"
+    echo "系统已经安装Fail2ban，不再重复安装"
 fi
 
-# 防止SYN洪泛攻击
-if ! sudo iptables -C INPUT -p tcp ! --syn -m state --state NEW -j DROP 2>/dev/null; then
-    sudo iptables -A INPUT -p tcp ! --syn -m state --state NEW -j DROP
-    echo "已添加规则：开启防止SYN洪泛攻击"
+# 跟踪连接状态
+if ! sudo iptables -C INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT 2>/dev/null; then
+    # 使用 -A 而不是 -I，因为我们想将这条规则添加到适当的位置
+    sudo iptables -A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
+    echo "已添加规则：状态检测，可以更精细地控制流量，防止半开连接"
 else
-    echo "已添加开启防止SYN洪泛攻击，不再重复添加"
+    echo "已添加跟踪连接状态规则，不再重复添加"
 fi
 
 # 防止端口扫描
@@ -83,6 +75,30 @@ else
     echo "已添加开启防止端口扫描 (ALL ALL)，不再重复添加"
 fi
 
+#丢弃无效包
+if ! sudo iptables -C INPUT -m state --state INVALID -j DROP 2>/dev/null; then
+    sudo iptables -A INPUT -m state --state INVALID -j DROP
+    echo "已添加规则：丢弃无效包"
+else
+    echo "已添加丢弃无效包规则，不再重复添加"
+fi
+
+# 丢弃ping请求
+if ! sudo iptables -C INPUT -p icmp --icmp-type echo-request -j DROP 2>/dev/null; then
+    sudo iptables -A INPUT -p icmp --icmp-type echo-request -j DROP
+    echo "已添加规则：丢弃所有的ping请求"
+else
+    echo "已添加丢弃所有的ping请求，不再重复添加"
+fi
+
+# 防止SYN洪泛攻击
+if ! sudo iptables -C INPUT -p tcp ! --syn -m state --state NEW -j DROP 2>/dev/null; then
+    sudo iptables -A INPUT -p tcp ! --syn -m state --state NEW -j DROP
+    echo "已添加规则：开启防止SYN洪泛攻击"
+else
+    echo "已添加开启防止SYN洪泛攻击，不再重复添加"
+fi
+
 # 防止XMAS攻击
 if ! sudo iptables -C INPUT -p tcp --tcp-flags ALL FIN,PSH,URG -j DROP 2>/dev/null; then
     sudo iptables -A INPUT -p tcp --tcp-flags ALL FIN,PSH,URG -j DROP
@@ -91,13 +107,7 @@ else
     echo "已添加防止XMAS Tree攻击已添加，不再重复添加"
 fi
 
-# 跟踪连接状态
-if ! sudo iptables -C INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT 2>/dev/null; then
-    sudo iptables -A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
-    echo "已添加规则：状态检测，可以更精细地控制流量，防止半开连接"
-else
-    echo "已添加跟踪连接状态规则，不再重复添加"
-fi
+
 
 #限制SYN每秒钟接受一个同一来源SYN请求，初始突发允许3个请求
 if ! sudo iptables -C INPUT -p tcp --syn -m limit --limit 1/s --limit-burst 3 -j ACCEPT 2>/dev/null; then
@@ -107,13 +117,7 @@ else
     echo "已添加限制SYN-Flood攻击规则，不再重复添加"
 fi
 
-#丢弃无效包
-if ! sudo iptables -C INPUT -m state --state INVALID -j DROP 2>/dev/null; then
-    sudo iptables -A INPUT -m state --state INVALID -j DROP
-    echo "已添加规则：丢弃无效包"
-else
-    echo "已添加丢弃无效包规则，不再重复添加"
-fi
+
 
 #防止Smurf攻击
 if ! sudo iptables -C INPUT -p icmp --icmp-type address-mask-request -j DROP 2>/dev/null; then
