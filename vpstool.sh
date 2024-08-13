@@ -14,7 +14,7 @@ if [ -z "$SSH_PORT" ]; then
 fi
 
 echo "SSH端口号为：$SSH_PORT"
-echo "安装fail2ban,同时开始通过iptables进行攻击缓解设置..."
+echo "检测fail2ban,同时开始iptables进行攻击缓解设置..."
 
 # 检查iptables备份文件是否存在
 if [ -f "/root/iptables_backup.rules" ]; then
