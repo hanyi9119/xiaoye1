@@ -45,6 +45,7 @@ if ! dpkg -s fail2ban >/dev/null 2>&1; then
     bantime = 3600
     findtime = 600
     EOF"
+    
     #重启服务和检查服务状态
     sudo systemctl restart fail2ban
     sudo systemctl status fail2ban
