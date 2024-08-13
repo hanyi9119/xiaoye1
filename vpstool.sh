@@ -40,6 +40,7 @@ sudo bash -c "cat <<EOF > /etc/fail2ban/jail.local
 enabled = true
 port = $SSH_PORT
 filter = sshd
+logpath = /var/log/auth.log
 maxretry = 10
 bantime = 3600
 findtime = 600
