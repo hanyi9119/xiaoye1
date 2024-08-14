@@ -31,9 +31,9 @@ fi
 if ! dpkg -s fail2ban >/dev/null 2>&1; then
     echo "系统未安装Fail2ban，正在安装..."
     # 安装fail2ban
-    sudo apt -y update
-    sudo apt install -y fail2ban
-    
+    sudo apt -y update && \
+    sudo apt install -y fail2ban && \
+    sudo systemctl status fail2ban
 #书写fail2ban配置文件
 sudo bash -c "cat <<EOF > /etc/fail2ban/jail.local
 [sshd]
@@ -47,19 +47,19 @@ findtime = 600
 EOF"
 
 #安装和启动rsyslog
-sudo apt install -y rsyslog
-sudo systemctl start rsyslog
-sudo systemctl enable rsyslog
-sudo systemctl status rsyslog
+sudo apt install -y rsyslog && \
+sudo systemctl start rsyslog && \
+sudo systemctl enable rsyslog && \
+sudo systemctl status rsyslog && \
 sudo systemctl is-active --quiet rsyslog && echo "rsyslog 服务正在运行" || echo "rsyslog 服务未运行"
 
     #重启fail2ban服务和检查fail2ban状态
-    sudo systemctl restart fail2ban
-    sudo systemctl status fail2ban
+    sudo systemctl restart fail2ban && \
+    sudo systemctl status fail2ban && \
     sudo systemctl is-active --quiet fail2ban && echo "Fail2ban 安装完成正在运行" || echo "Fail2ban 服务未运行"
     echo "Fail2ban安装完成，已经写入配置：600秒内同一个ip错误尝试10次就封禁一个小时"
 else
-    sudo systemctl status fail2ban
+    sudo systemctl status fail2ban && \
     sudo systemctl is-active --quiet fail2ban && echo "Fail2ban 服务正在运行" || echo "Fail2ban 服务未运行"
     echo "系统已经安装Fail2ban，不再重复安装"
 fi
