@@ -50,18 +50,35 @@ EOF"
 sudo apt install -y rsyslog && \
 sudo systemctl start rsyslog && \
 sudo systemctl enable rsyslog && \
-sudo systemctl status rsyslog && \
+sudo systemctl status rsyslog
+    if ! systemctl is-active --quiet rsyslog; then
+        echo "启动 rsyslog 服务失败"
+        exit 1
+    fi
 sudo systemctl is-active --quiet rsyslog && echo "rsyslog 服务正在运行" || echo "rsyslog 服务未运行"
 
     #重启fail2ban服务和检查fail2ban状态
-    sudo systemctl restart fail2ban && \
-    sudo systemctl status fail2ban && \
+    sudo systemctl restart fail2ban
+    # 启动 Fail2ban 服务
+    sudo systemctl restart fail2ban
+    if ! systemctl is-active --quiet fail2ban; then
+        echo "启动 Fail2ban 服务失败"
+        exit 1
+        sudo systemctl is-active --quiet fail2ban && echo "Fail2ban 安装完成正在运行" || echo "Fail2ban 服务未运行"
+    fi
+    echo "Fail2ban 安装配置完成"
     sudo systemctl is-active --quiet fail2ban && echo "Fail2ban 安装完成正在运行" || echo "Fail2ban 服务未运行"
     echo "Fail2ban安装完成，已经写入配置：600秒内同一个ip错误尝试10次就封禁一个小时"
 else
-    sudo systemctl status fail2ban && \
-    sudo systemctl is-active --quiet fail2ban && echo "Fail2ban 服务正在运行" || echo "Fail2ban 服务未运行"
+    sudo systemctl status fail2ban
     echo "系统已经安装Fail2ban，不再重复安装"
+    sudo systemctl restart fail2ban
+    if ! systemctl is-active --quiet fail2ban; then
+        echo "启动 Fail2ban 服务失败"
+        exit 1
+
+    fi
+    sudo systemctl is-active --quiet fail2ban && echo "Fail2ban 服务正在运行" || echo "Fail2ban 服务未运行"
 fi
 
 # 跟踪连接状态流量规则插入到第1条
