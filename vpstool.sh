@@ -46,7 +46,7 @@ bantime = 3600
 findtime = 600
 EOF"
 
-#安装rsyslog
+#安装和启动rsyslog
 sudo apt install rsyslog
 sudo systemctl start rsyslog
 sudo systemctl enable rsyslog
