@@ -67,7 +67,7 @@ sudo systemctl is-active --quiet rsyslog && echo "rsyslog 服务正在运行" ||
     fi
     echo "Fail2ban 安装配置完成"
     sudo systemctl is-active --quiet fail2ban && echo "Fail2ban 安装完成正在运行" || echo "Fail2ban 服务未运行"
-    echo "Fail2ban安装完成，已经写入配置：600秒内同一个ip错误尝试10次就封禁一个小时"
+    echo "Fail2ban安装完成，已经写入配置：600秒内同一个ip错误尝试10次封禁一个小时"
 else
     sudo systemctl status fail2ban
     echo "系统已经安装Fail2ban，不再重复安装"
