@@ -47,7 +47,7 @@ findtime = 600
 EOF"
 
 #安装和启动rsyslog
-sudo apt install rsyslog
+sudo apt install -y rsyslog
 sudo systemctl start rsyslog
 sudo systemctl enable rsyslog
 sudo systemctl status rsyslog
