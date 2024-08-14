@@ -73,6 +73,14 @@ else
     echo "已添加跟踪连接状态规则，不再重复添加"
 fi
 
+# 将已建立和相关的输出流量规则插入到第3条
+if ! sudo iptables -C OUTPUT -m state --state ESTABLISHED,RELATED -j ACCEPT 2>/dev/null; then
+    sudo iptables -I OUTPUT 1 -m state --state ESTABLISHED,RELATED -j ACCEPT
+    echo "已添加规则：允许已建立和相关的输出流量"
+else
+    echo "已建立和相关输出规则已存在，不再重复添加"
+fi
+
 # 将环回接口的输入流量规则插入到第2条
 if ! sudo iptables -C INPUT -i lo -j ACCEPT 2>/dev/null; then
     sudo iptables -I INPUT 2 -i lo -j ACCEPT
@@ -81,17 +89,9 @@ else
     echo "环回接口输入规则已存在，不再重复添加"
 fi
 
-# 将已建立和相关的输出流量规则插入到第3条
-if ! sudo iptables -C OUTPUT -m state --state ESTABLISHED,RELATED -j ACCEPT 2>/dev/null; then
-    sudo iptables -I OUTPUT 3 -m state --state ESTABLISHED,RELATED -j ACCEPT
-    echo "已添加规则：允许已建立和相关的输出流量"
-else
-    echo "已建立和相关输出规则已存在，不再重复添加"
-fi
-
 # 将环回接口的输出流量规则插入到第4条
 if ! sudo iptables -C OUTPUT -o lo -j ACCEPT 2>/dev/null; then
-    sudo iptables -I OUTPUT 4 -o lo -j ACCEPT
+    sudo iptables -I OUTPUT 2 -o lo -j ACCEPT
     echo "已添加规则：允许环回接口的输出流量"
 else
     echo "环回接口输出规则已存在，不再重复添加"
