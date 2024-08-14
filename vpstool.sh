@@ -31,8 +31,8 @@ fi
 if ! dpkg -s fail2ban >/dev/null 2>&1; then
     echo "系统未安装Fail2ban，正在安装..."
     # 安装fail2ban
-    sudo apt -y update && \
-    sudo apt install -y fail2ban && \
+    sudo apt -y update
+    sudo apt install -y fail2ban
     sudo systemctl status fail2ban
 #书写fail2ban配置文件
 sudo bash -c "cat <<EOF > /etc/fail2ban/jail.local
@@ -47,10 +47,9 @@ findtime = 600
 EOF"
 
 #安装和启动rsyslog
-sudo apt install -y rsyslog && \
-sudo systemctl start rsyslog && \
-sudo systemctl enable rsyslog && \
-sudo systemctl status rsyslog
+sudo apt install -y rsyslog
+sudo systemctl start rsyslog
+sudo systemctl enable rsyslog
     if ! systemctl is-active --quiet rsyslog; then
         echo "启动 rsyslog 服务失败"
         exit 1
