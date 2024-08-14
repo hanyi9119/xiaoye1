@@ -64,13 +64,37 @@ else
     echo "系统已经安装Fail2ban，不再重复安装"
 fi
 
-# 跟踪连接状态
+# 跟踪连接状态流量规则插入到第1条
 if ! sudo iptables -C INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT 2>/dev/null; then
     # 插入到第一条，因为我们希望这条规则首先被评估
     sudo iptables -I INPUT 1 -m state --state ESTABLISHED,RELATED -j ACCEPT
     echo "已添加规则：状态检测，可以更精细地控制流量，防止半开连接"
 else
     echo "已添加跟踪连接状态规则，不再重复添加"
+fi
+
+# 将环回接口的输入流量规则插入到第2条
+if ! sudo iptables -C INPUT -i lo -j ACCEPT 2>/dev/null; then
+    sudo iptables -I INPUT 2 -i lo -j ACCEPT
+    echo "已添加规则：允许环回接口的输入流量"
+else
+    echo "环回接口输入规则已存在，不再重复添加"
+fi
+
+# 将已建立和相关的输出流量规则插入到第3条
+if ! sudo iptables -C OUTPUT -m state --state ESTABLISHED,RELATED -j ACCEPT 2>/dev/null; then
+    sudo iptables -I OUTPUT 3 -m state --state ESTABLISHED,RELATED -j ACCEPT
+    echo "已添加规则：允许已建立和相关的输出流量"
+else
+    echo "已建立和相关输出规则已存在，不再重复添加"
+fi
+
+# 将环回接口的输出流量规则插入到第4条
+if ! sudo iptables -C OUTPUT -o lo -j ACCEPT 2>/dev/null; then
+    sudo iptables -I OUTPUT 4 -o lo -j ACCEPT
+    echo "已添加规则：允许环回接口的输出流量"
+else
+    echo "环回接口输出规则已存在，不再重复添加"
 fi
 
 # 防止端口扫描
