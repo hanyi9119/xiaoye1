@@ -475,9 +475,11 @@ Del_iptables(){
 }
 Save_iptables(){
 	iptables-save > /etc/iptables.up.rules
+	ip6tables-save > /etc/ip6tables.up.rules
 }
 Set_iptables(){
 	echo -e "net.ipv4.ip_forward=1" >> /etc/sysctl.conf
+	echo -e "net.ipv6.conf.all.forwarding=1" >> /etc/sysctl.conf
 	sysctl -p
 	ifconfig_status=$(ifconfig)
 	if [[ -z ${ifconfig_status} ]]; then
@@ -500,10 +502,16 @@ Set_iptables(){
 		fi
 	fi
 	iptables -t nat -A POSTROUTING -o ${Network_card} -j MASQUERADE
-	
+	ip6tables -t nat -A POSTROUTING -o ${Network_card} -j MASQUERADE
+ 
 	iptables-save > /etc/iptables.up.rules
 	echo -e '#!/bin/bash\n/sbin/iptables-restore < /etc/iptables.up.rules' > /etc/network/if-pre-up.d/iptables
 	chmod +x /etc/network/if-pre-up.d/iptables
+
+	ip6tables-save > /etc/ip6tables.up.rules
+	echo -e '#!/bin/bash\n/sbin/ip6tables-restore < /etc/ip6tables.up.rules' > /etc/network/if-pre-up.d/ip6tables
+	chmod +x /etc/network/if-pre-up.d/ip6tables
+
 }
 Update_Shell(){
 	echo -e "当前版本为 [ ${sh_ver} ]，开始检测最新版本..."
