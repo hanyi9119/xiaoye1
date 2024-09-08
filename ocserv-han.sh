@@ -463,10 +463,15 @@ over(){
 Add_iptables(){
 	iptables -A INPUT -p tcp --dport ${set_tcp_port} -m conntrack --ctstate NEW,ESTABLISHED -j ACCEPT
 	iptables -A INPUT -p udp --dport ${set_tcp_port} -m conntrack --ctstate NEW,ESTABLISHED -j ACCEPT
+	ip6tables -A INPUT -p tcp --dport ${set_tcp_port} -m conntrack --ctstate NEW,ESTABLISHED -j ACCEPT
+	ip6tables -A INPUT -p udp --dport ${set_tcp_port} -m conntrack --ctstate NEW,ESTABLISHED -j ACCEPT
 }
 Del_iptables(){
 	iptables -D INPUT -p tcp --dport ${set_tcp_port} -m conntrack --ctstate NEW,ESTABLISHED -j ACCEPT
 	iptables -D INPUT -p udp --dport ${set_tcp_port} -m conntrack --ctstate NEW,ESTABLISHED -j ACCEPT
+	ip6tables -D INPUT -p tcp --dport ${set_tcp_port} -m conntrack --ctstate NEW,ESTABLISHED -j ACCEPT
+	ip6tables -D INPUT -p udp --dport ${set_tcp_port} -m conntrack --ctstate NEW,ESTABLISHED -j ACCEPT
+ 
 }
 Save_iptables(){
 	iptables-save > /etc/iptables.up.rules
