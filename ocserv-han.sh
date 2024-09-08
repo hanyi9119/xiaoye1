@@ -461,12 +461,12 @@ over(){
 	echo && echo "安装过程错误，ocserv 卸载完成 !" && echo
 }
 Add_iptables(){
-	iptables -I INPUT -m state --state NEW -m tcp -p tcp --dport ${set_tcp_port} -j ACCEPT
-	iptables -I INPUT -m state --state NEW -m udp -p udp --dport ${set_udp_port} -j ACCEPT
+	iptables -A INPUT -p tcp --dport ${set_tcp_port} -m conntrack --ctstate NEW,ESTABLISHED -j ACCEPT
+	iptables -A INPUT -p udp --dport ${set_tcp_port} -m conntrack --ctstate NEW,ESTABLISHED -j ACCEPT
 }
 Del_iptables(){
-	iptables -D INPUT -m state --state NEW -m tcp -p tcp --dport ${tcp_port} -j ACCEPT
-	iptables -D INPUT -m state --state NEW -m udp -p udp --dport ${udp_port} -j ACCEPT
+	iptables -D INPUT -p tcp --dport ${set_tcp_port} -m conntrack --ctstate NEW,ESTABLISHED -j ACCEPT
+	iptables -D INPUT -p udp --dport ${set_tcp_port} -m conntrack --ctstate NEW,ESTABLISHED -j ACCEPT
 }
 Save_iptables(){
 	iptables-save > /etc/iptables.up.rules
