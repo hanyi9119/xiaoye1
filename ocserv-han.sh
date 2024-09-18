@@ -461,16 +461,16 @@ over(){
 	echo && echo "安装过程错误，ocserv 卸载完成 !" && echo
 }
 Add_iptables(){
-	iptables -A INPUT -p tcp --dport ${set_tcp_port} -m conntrack --ctstate NEW,ESTABLISHED -j ACCEPT
-	iptables -A INPUT -p udp --dport ${set_tcp_port} -m conntrack --ctstate NEW,ESTABLISHED -j ACCEPT
-	ip6tables -A INPUT -p tcp --dport ${set_tcp_port} -m conntrack --ctstate NEW,ESTABLISHED -j ACCEPT
-	ip6tables -A INPUT -p udp --dport ${set_tcp_port} -m conntrack --ctstate NEW,ESTABLISHED -j ACCEPT
+	sudo iptables -A INPUT -p tcp --dport ${set_tcp_port} -j ACCEPT
+	sudo iptables -A INPUT -p udp --dport ${set_tcp_port} -j ACCEPT
+	sudo ip6tables -A INPUT -p tcp --dport ${set_tcp_port} -j ACCEPT
+	sudo ip6tables -A INPUT -p udp --dport ${set_tcp_port} -j ACCEPT
 }
 Del_iptables(){
-	iptables -D INPUT -p tcp --dport ${set_tcp_port} -m conntrack --ctstate NEW,ESTABLISHED -j ACCEPT
-	iptables -D INPUT -p udp --dport ${set_tcp_port} -m conntrack --ctstate NEW,ESTABLISHED -j ACCEPT
-	ip6tables -D INPUT -p tcp --dport ${set_tcp_port} -m conntrack --ctstate NEW,ESTABLISHED -j ACCEPT
-	ip6tables -D INPUT -p udp --dport ${set_tcp_port} -m conntrack --ctstate NEW,ESTABLISHED -j ACCEPT
+	sudo iptables -D INPUT -p tcp --dport ${set_tcp_port} -j ACCEPT
+	sudo iptables -D INPUT -p udp --dport ${set_tcp_port} -j ACCEPT
+	sudo ip6tables -D INPUT -p tcp --dport ${set_tcp_port} -j ACCEPT
+	sudo ip6tables -D INPUT -p udp --dport ${set_tcp_port} -j ACCEPT
  
 }
 Save_iptables(){
