@@ -33,6 +33,38 @@ create_swap() {
     echo "swap建立完成！"
 }
 
+# 设置 vm.swappiness 值为60
+set_swappiness() {
+    TARGET_SWAPPINESS=60
+    SYSCTL_CONF="/etc/sysctl.conf"
+
+    # 检查 /etc/sysctl.conf 中的 vm.swappiness 设置
+    if grep -q "^vm.swappiness" "$SYSCTL_CONF"; then
+        # 如果存在 vm.swappiness 设置，检查其值
+        CURRENT_SWAPPINESS=$(grep "^vm.swappiness" "$SYSCTL_CONF" | awk -F= '{print $2}' | tr -d ' ')
+        if [ "$CURRENT_SWAPPINESS" -ne "$TARGET_SWAPPINESS" ]; then
+            # 如果不等于目标值，修改为目标值
+            sudo sed -i "s/^vm.swappiness=.*/vm.swappiness=$TARGET_SWAPPINESS/" "$SYSCTL_CONF"
+        fi
+    else
+        # 如果没有设置，添加目标值
+        echo "vm.swappiness=$TARGET_SWAPPINESS" | sudo tee -a "$SYSCTL_CONF" > /dev/null
+    fi
+
+    # 立即应用更改，并检查是否成功
+    if sudo sysctl -p > /dev/null 2>&1; then
+        echo "vm.swappiness值设置完成："
+        echo "vm.swappiness = $(cat /proc/sys/vm/swappiness)"
+    else
+        echo "应用 vm.swappiness 设置时出错。"
+    fi
+}
+
+
+
+
+
+
 # 主逻辑
 main() {
     check_root
@@ -68,6 +100,7 @@ main() {
     fi
 
     create_swap "$swap"
+    set_swappiness
     free -m
 }
 
