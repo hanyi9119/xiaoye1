@@ -70,7 +70,8 @@ main() {
     check_root
     get_total_memory
     get_current_swap
-
+    set_swappiness
+    
     if [ "$current_swap" -gt 0 ]; then
         double_memory=$((total_memory * 2))
         if [ "$current_swap" -ge "$double_memory" ]; then
@@ -98,9 +99,8 @@ main() {
         echo "错误：磁盘空间不足，无法创建所需大小的swap文件。"
         exit 1
     fi
-
+    
     create_swap "$swap"
-    set_swappiness
     free -m
 }
 
