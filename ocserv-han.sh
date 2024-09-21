@@ -461,16 +461,16 @@ over(){
 	echo && echo "安装过程错误，ocserv 卸载完成 !" && echo
 }
 Add_iptables(){
- 	iptables -A INPUT -p tcp --dport ${Network_card} -m conntrack --ctstate NEW,ESTABLISHED -j ACCEPT
-	iptables -A INPUT -p udp --dport ${Network_card} -m conntrack --ctstate NEW,ESTABLISHED -j ACCEPT
-	ip6tables -A INPUT -p tcp --dport ${Network_card} -m conntrack --ctstate NEW,ESTABLISHED -j ACCEPT
-	ip6tables -A INPUT -p udp --dport ${Network_card} -m conntrack --ctstate NEW,ESTABLISHED -j ACCEPT
+	iptables -I INPUT -m state --state NEW -m tcp -p tcp --dport ${set_tcp_port} -j ACCEPT
+	iptables -I INPUT -m state --state NEW -m udp -p udp --dport ${set_udp_port} -j ACCEPT
+	ip6tables -I INPUT -m state --state NEW -m tcp -p tcp --dport ${set_tcp_port} -j ACCEPT
+	ip6tables -I INPUT -m state --state NEW -m udp -p udp --dport ${set_udp_port} -j ACCEPT
 }
 Del_iptables(){
-	iptables -D INPUT -p tcp --dport ${set_tcp_port} -m conntrack --ctstate NEW,ESTABLISHED -j ACCEPT
-	iptables -D INPUT -p udp --dport ${set_tcp_port} -m conntrack --ctstate NEW,ESTABLISHED -j ACCEPT
-	ip6tables -D INPUT -p tcp --dport ${set_tcp_port} -m conntrack --ctstate NEW,ESTABLISHED -j ACCEPT
-	ip6tables -D INPUT -p udp --dport ${set_tcp_port} -m conntrack --ctstate NEW,ESTABLISHED -j ACCEPT
+	iptables -D INPUT -m state --state NEW -m tcp -p tcp --dport ${tcp_port} -j ACCEPT
+	iptables -D INPUT -m state --state NEW -m udp -p udp --dport ${udp_port} -j ACCEPT
+	ip6tables -D INPUT -m state --state NEW -m tcp -p tcp --dport ${tcp_port} -j ACCEPT
+	ip6tables -D INPUT -m state --state NEW -m udp -p udp --dport ${udp_port} -j ACCEPT
  
 }
 Save_iptables(){
@@ -501,10 +501,8 @@ Set_iptables(){
 			fi
 		fi
 	fi
-	iptables -A INPUT -p tcp --dport ${Network_card} -m conntrack --ctstate NEW,ESTABLISHED -j ACCEPT
-	iptables -A INPUT -p udp --dport ${Network_card} -m conntrack --ctstate NEW,ESTABLISHED -j ACCEPT
-	ip6tables -A INPUT -p tcp --dport ${Network_card} -m conntrack --ctstate NEW,ESTABLISHED -j ACCEPT
-	ip6tables -A INPUT -p udp --dport ${Network_card} -m conntrack --ctstate NEW,ESTABLISHED -j ACCEPT
+	iptables -t nat -A POSTROUTING -o ${Network_card} -j MASQUERADE
+	ip6tables -t nat -A POSTROUTING -o ${Network_card} -j MASQUERADE
 	iptables-save > /etc/iptables.up.rules
 	echo -e '#!/bin/bash\n/sbin/iptables-restore < /etc/iptables.up.rules' > /etc/network/if-pre-up.d/iptables
 	chmod +x /etc/network/if-pre-up.d/iptables
