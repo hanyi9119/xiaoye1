@@ -461,16 +461,16 @@ over(){
 	echo && echo "安装过程错误，ocserv 卸载完成 !" && echo
 }
 Add_iptables(){
-	sudo iptables -A INPUT -p tcp --dport ${set_tcp_port} -j ACCEPT
-	sudo iptables -A INPUT -p udp --dport ${set_tcp_port} -j ACCEPT
-	sudo ip6tables -A INPUT -p tcp --dport ${set_tcp_port} -j ACCEPT
-	sudo ip6tables -A INPUT -p udp --dport ${set_tcp_port} -j ACCEPT
+ 	iptables -A INPUT -p tcp --dport ${Network_card} -m conntrack --ctstate NEW,ESTABLISHED -j ACCEPT
+	iptables -A INPUT -p udp --dport ${Network_card} -m conntrack --ctstate NEW,ESTABLISHED -j ACCEPT
+	ip6tables -A INPUT -p tcp --dport ${Network_card} -m conntrack --ctstate NEW,ESTABLISHED -j ACCEPT
+	ip6tables -A INPUT -p udp --dport ${Network_card} -m conntrack --ctstate NEW,ESTABLISHED -j ACCEPT
 }
 Del_iptables(){
-	sudo iptables -D INPUT -p tcp --dport ${set_tcp_port} -j ACCEPT
-	sudo iptables -D INPUT -p udp --dport ${set_tcp_port} -j ACCEPT
-	sudo ip6tables -D INPUT -p tcp --dport ${set_tcp_port} -j ACCEPT
-	sudo ip6tables -D INPUT -p udp --dport ${set_tcp_port} -j ACCEPT
+	iptables -D INPUT -p tcp --dport ${set_tcp_port} -m conntrack --ctstate NEW,ESTABLISHED -j ACCEPT
+	iptables -D INPUT -p udp --dport ${set_tcp_port} -m conntrack --ctstate NEW,ESTABLISHED -j ACCEPT
+	ip6tables -D INPUT -p tcp --dport ${set_tcp_port} -m conntrack --ctstate NEW,ESTABLISHED -j ACCEPT
+	ip6tables -D INPUT -p udp --dport ${set_tcp_port} -m conntrack --ctstate NEW,ESTABLISHED -j ACCEPT
  
 }
 Save_iptables(){
@@ -501,9 +501,10 @@ Set_iptables(){
 			fi
 		fi
 	fi
-	iptables -t nat -A POSTROUTING -o ${Network_card} -j MASQUERADE
-	ip6tables -t nat -A POSTROUTING -o ${Network_card} -j MASQUERADE
- 
+	iptables -A INPUT -p tcp --dport ${Network_card} -m conntrack --ctstate NEW,ESTABLISHED -j ACCEPT
+	iptables -A INPUT -p udp --dport ${Network_card} -m conntrack --ctstate NEW,ESTABLISHED -j ACCEPT
+	ip6tables -A INPUT -p tcp --dport ${Network_card} -m conntrack --ctstate NEW,ESTABLISHED -j ACCEPT
+	ip6tables -A INPUT -p udp --dport ${Network_card} -m conntrack --ctstate NEW,ESTABLISHED -j ACCEPT
 	iptables-save > /etc/iptables.up.rules
 	echo -e '#!/bin/bash\n/sbin/iptables-restore < /etc/iptables.up.rules' > /etc/network/if-pre-up.d/iptables
 	chmod +x /etc/network/if-pre-up.d/iptables
