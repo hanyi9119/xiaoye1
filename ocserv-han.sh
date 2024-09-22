@@ -518,8 +518,9 @@ Set_iptables(){
 			fi
 		fi
 	fi
-	iptables -t nat -A POSTROUTING -o ${Network_card} -j MASQUERADE
-	ip6tables -t nat -A POSTROUTING -o ${Network_card} -j MASQUERADE
+ 	sudo iptables -t nat -A POSTROUTING -o ${Network_card} -j MASQUERADE
+	sudo ip6tables -t nat -A POSTROUTING -o ${Network_card} -j MASQUERADE
+ 
 	iptables-save > /etc/iptables.up.rules
 	echo -e '#!/bin/bash\n/sbin/iptables-restore < /etc/iptables.up.rules' > /etc/network/if-pre-up.d/iptables
 	chmod +x /etc/network/if-pre-up.d/iptables
