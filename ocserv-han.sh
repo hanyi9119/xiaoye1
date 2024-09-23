@@ -528,7 +528,7 @@ Set_iptables(){
 	sudo ip6tables-save > /etc/iptables/rules.v6
 	sudo chown root:root /etc/iptables/rules.v4 /etc/iptables/rules.v6
 	sudo chmod 600 /etc/iptables/rules.v4 /etc/iptables/rules.v6
-	sudo apt-get install -y iptables-persistent
+	sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -q iptables-persistent
 	sudo systemctl enable iptables
 	sudo systemctl enable ip6tables
 
