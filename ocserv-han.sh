@@ -491,8 +491,8 @@ Del_iptables(){
  
 }
 Save_iptables(){
-	iptables-save > /etc/iptables.up.rules
-	ip6tables-save > /etc/ip6tables.up.rules
+	sudo iptables-save > /etc/iptables/rules.v4
+	sudo ip6tables-save > /etc/iptables/rules.v6
 }
 Set_iptables(){
 	echo -e "net.ipv4.ip_forward=1" >> /etc/sysctl.conf
@@ -520,14 +520,17 @@ Set_iptables(){
 	fi
  	sudo iptables -t nat -A POSTROUTING -o ${Network_card} -j MASQUERADE
 	sudo ip6tables -t nat -A POSTROUTING -o ${Network_card} -j MASQUERADE
- 
-	iptables-save > /etc/iptables.up.rules
-	echo -e '#!/bin/bash\n/sbin/iptables-restore < /etc/iptables.up.rules' > /etc/network/if-pre-up.d/iptables
-	chmod +x /etc/network/if-pre-up.d/iptables
 
-	ip6tables-save > /etc/ip6tables.up.rules
-	echo -e '#!/bin/bash\n/sbin/ip6tables-restore < /etc/ip6tables.up.rules' > /etc/network/if-pre-up.d/ip6tables
-	chmod +x /etc/network/if-pre-up.d/ip6tables
+	sudo mkdir -p /etc/iptables
+	sudo touch /etc/iptables/rules.v4
+	sudo touch /etc/iptables/rules.v6
+	sudo iptables-save > /etc/iptables/rules.v4
+	sudo ip6tables-save > /etc/iptables/rules.v6
+	sudo chown root:root /etc/iptables/rules.v4 /etc/iptables/rules.v6
+	sudo chmod 600 /etc/iptables/rules.v4 /etc/iptables/rules.v6
+	sudo apt-get install -y iptables-persistent
+	sudo systemctl enable iptables
+	sudo systemctl enable ip6tables
 
 }
 Update_Shell(){
