@@ -484,9 +484,9 @@ fi
 
 }
 Del_iptables(){
-	iptables -D INPUT -p tcp --dport ${tcp_port} -m conntrack --ctstate NEW,ESTABLISHED -j ACCEPT
-	iptables -D INPUT -p udp --dport ${udp_port} -m conntrack --ctstate NEW,ESTABLISHED -j ACCEPT
-	ip6tables -D INPUT -p tcp --dport ${tcp_port} -m conntrack --ctstate NEW,ESTABLISHED -j ACCEPT
+ 	iptables -D INPUT -p tcp --dport ${tcp_port} -m conntrack --ctstate NEW,ESTABLISHED -j ACCEPT
+ 	iptables -D INPUT -p udp --dport ${udp_port} -m conntrack --ctstate NEW,ESTABLISHED -j ACCEPT
+ 	ip6tables -D INPUT -p tcp --dport ${tcp_port} -m conntrack --ctstate NEW,ESTABLISHED -j ACCEPT
 	ip6tables -D INPUT -p udp --dport ${udp_port} -m conntrack --ctstate NEW,ESTABLISHED -j ACCEPT
  
 }
