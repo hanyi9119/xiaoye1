@@ -526,8 +526,8 @@ Save_iptables(){
 	sudo ip6tables-save > /etc/iptables/rules.v6
 }
 Set_iptables(){
-	echo -e "net.ipv4.ip_forward=1" >> /etc/sysctl.conf
-	echo -e "net.ipv6.conf.all.forwarding=1" >> /etc/sysctl.conf
+	echo -e "net.ipv4.ip_forward = 1" >> /etc/sysctl.conf
+	echo -e "net.ipv6.conf.all.forwarding = 1" >> /etc/sysctl.conf
 	sysctl -p
 	ifconfig_status=$(ifconfig)
 	if [[ -z ${ifconfig_status} ]]; then
