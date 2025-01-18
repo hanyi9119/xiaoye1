@@ -519,7 +519,11 @@ Del_iptables() {
     if ip6tables -C INPUT -p udp --dport ${set_udp_port} -j ACCEPT >/dev/null 2>&1; then
         ip6tables -D INPUT -p udp --dport ${set_udp_port} -j ACCEPT
     fi
-
+    
+    # 保存当前规则
+    sudo iptables-save > /etc/iptables/rules.v4
+    sudo ip6tables-save > /etc/iptables/rules.v6
+    
     # 删除 /etc/sysctl.conf 中的 IPv4 和 IPv6 转发配置
     sed -i '/^net.ipv4.ip_forward = 1$/d' /etc/sysctl.conf
     sed -i '/^net.ipv6.conf.all.forwarding = 1$/d' /etc/sysctl.conf
@@ -560,16 +564,29 @@ Set_iptables(){
  	sudo iptables -t nat -A POSTROUTING -o ${Network_card} -j MASQUERADE
 	sudo ip6tables -t nat -A POSTROUTING -o ${Network_card} -j MASQUERADE
 
+	# 创建规则文件目录
 	sudo mkdir -p /etc/iptables
+
+	# 创建规则文件
 	sudo touch /etc/iptables/rules.v4
 	sudo touch /etc/iptables/rules.v6
+
+	# 保存当前规则
 	sudo iptables-save > /etc/iptables/rules.v4
 	sudo ip6tables-save > /etc/iptables/rules.v6
+
+	# 设置文件权限
 	sudo chown root:root /etc/iptables/rules.v4 /etc/iptables/rules.v6
 	sudo chmod 600 /etc/iptables/rules.v4 /etc/iptables/rules.v6
+
+	# 安装 iptables-persistent
 	sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -q iptables-persistent
-	sudo systemctl enable iptables
-	sudo systemctl enable ip6tables
+
+	# 启用 netfilter-persistent 服务
+	sudo systemctl enable netfilter-persistent
+
+	# 重启 netfilter-persistent 服务以加载规则
+	sudo systemctl restart netfilter-persistent
 
 }
 Update_Shell(){
