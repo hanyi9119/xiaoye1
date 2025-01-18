@@ -561,57 +561,68 @@ Save_iptables(){
 }
 
 Set_iptables(){
-	echo -e "net.ipv4.ip_forward = 1" >> /etc/sysctl.conf
-	echo -e "net.ipv6.conf.all.forwarding = 1" >> /etc/sysctl.conf
-	sysctl -p
-	ifconfig_status=$(ifconfig)
-	if [[ -z ${ifconfig_status} ]]; then
-		echo -e "${Error} ifconfig 未安装 !"
-		stty erase '^H' && read -p "请手动输入你的网卡名(一般为 eth0，OpenVZ则为 venet0):" Network_card
-		[[ -z "${Network_card}" ]] && echo "取消..." && exit 1
-	else
-		Network_card=$(ifconfig|grep "eth0")
-		if [[ ! -z ${Network_card} ]]; then
-			Network_card="eth0"
-		else
-			Network_card=$(ifconfig|grep "venet0")
-			if [[ ! -z ${Network_card} ]]; then
-				Network_card="venet0"
-			else
-				ifconfig
-				stty erase '^H' && read -p "检测到本服务器的网卡非 eth0 和 venet0 请根据上面输出的网卡信息手动输入你的网卡名:" Network_card
-				[[ -z "${Network_card}" ]] && echo "取消..." && exit 1
-			fi
-		fi
-	fi
- 	sudo iptables -t nat -A POSTROUTING -o ${Network_card} -j MASQUERADE
-	sudo ip6tables -t nat -A POSTROUTING -o ${Network_card} -j MASQUERADE
+    echo -e "net.ipv4.ip_forward = 1" >> /etc/sysctl.conf
+    echo -e "net.ipv6.conf.all.forwarding = 1" >> /etc/sysctl.conf
+    sysctl -p
 
-	# 创建规则文件目录
-	sudo mkdir -p /etc/iptables
+    # 自动获取公网通讯的网卡名称
+    Network_card=$(ip route | grep default | awk '{print $5}')
+    if [[ -z ${Network_card} ]]; then
+        echo -e "${Error} 无法自动获取网卡名，请手动输入！"
+        stty erase '^H' && read -p "请手动输入你的网卡名(一般为 eth0，OpenVZ则为 venet0):" Network_card
+        [[ -z "${Network_card}" ]] && echo "取消..." && exit 1
+    fi
 
-	# 创建规则文件
-	sudo touch /etc/iptables/rules.v4
-	sudo touch /etc/iptables/rules.v6
+    # 以下逻辑保持不变
+    ifconfig_status=$(ifconfig)
+    if [[ -z ${ifconfig_status} ]]; then
+        echo -e "${Error} ifconfig 未安装 !"
+        stty erase '^H' && read -p "请手动输入你的网卡名(一般为 eth0，OpenVZ则为 venet0):" Network_card
+        [[ -z "${Network_card}" ]] && echo "取消..." && exit 1
+    else
+        Network_card=$(ifconfig|grep "eth0")
+        if [[ ! -z ${Network_card} ]]; then
+            Network_card="eth0"
+        else
+            Network_card=$(ifconfig|grep "venet0")
+            if [[ ! -z ${Network_card} ]]; then
+                Network_card="venet0"
+            else
+                ifconfig
+                stty erase '^H' && read -p "检测到本服务器的网卡非 eth0 和 venet0 请根据上面输出的网卡信息手动输入你的网卡名:" Network_card
+                [[ -z "${Network_card}" ]] && echo "取消..." && exit 1
+            fi
+        fi
+    fi
 
-	# 保存当前规则
-	sudo iptables-save > /etc/iptables/rules.v4
-	sudo ip6tables-save > /etc/iptables/rules.v6
+    sudo iptables -t nat -A POSTROUTING -o ${Network_card} -j MASQUERADE
+    sudo ip6tables -t nat -A POSTROUTING -o ${Network_card} -j MASQUERADE
 
-	# 设置文件权限
-	sudo chown root:root /etc/iptables/rules.v4 /etc/iptables/rules.v6
-	sudo chmod 600 /etc/iptables/rules.v4 /etc/iptables/rules.v6
+    # 创建规则文件目录
+    sudo mkdir -p /etc/iptables
 
-	# 安装 iptables-persistent
-	sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -q iptables-persistent
+    # 创建规则文件
+    sudo touch /etc/iptables/rules.v4
+    sudo touch /etc/iptables/rules.v6
 
-	# 启用 netfilter-persistent 服务
-	sudo systemctl enable netfilter-persistent
+    # 保存当前规则
+    sudo iptables-save > /etc/iptables/rules.v4
+    sudo ip6tables-save > /etc/iptables/rules.v6
 
-	# 重启 netfilter-persistent 服务以加载规则
-	sudo systemctl restart netfilter-persistent
+    # 设置文件权限
+    sudo chown root:root /etc/iptables/rules.v4 /etc/iptables/rules.v6
+    sudo chmod 600 /etc/iptables/rules.v4 /etc/iptables/rules.v6
 
+    # 安装 iptables-persistent
+    sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -q iptables-persistent
+
+    # 启用 netfilter-persistent 服务
+    sudo systemctl enable netfilter-persistent
+
+    # 重启 netfilter-persistent 服务以加载规则
+    sudo systemctl restart netfilter-persistent
 }
+
 Update_Shell(){
 	echo -e "当前版本为 [ ${sh_ver} ]，开始检测最新版本..."
 	sh_new_ver=$(wget --no-check-certificate -qO- "https://raw.githubusercontent.com/ToyoDAdoubi/doubi/master/ocserv.sh"|grep 'sh_ver="'|awk -F "=" '{print $NF}'|sed 's/\"//g'|head -1)
