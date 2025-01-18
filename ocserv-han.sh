@@ -525,7 +525,7 @@ Del_iptables() {
     sed -i '/^net.ipv6.conf.all.forwarding = 1$/d' /etc/sysctl.conf
 
     # 重新加载 sysctl 配置
-    sysctl -p
+    sysctl -p >/dev/null 2>&1;
 
 }
 
