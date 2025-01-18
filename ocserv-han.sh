@@ -520,6 +520,10 @@ Del_iptables() {
         ip6tables -D INPUT -p udp --dport ${set_udp_port} -j ACCEPT
     fi
 
+    # 保存当前规则
+    sudo iptables-save > /etc/iptables/rules.v4
+    sudo ip6tables-save > /etc/iptables/rules.v6
+ 
     # 定义规则文件路径
     RULES_V4="/etc/iptables/rules.v4"
     RULES_V6="/etc/iptables/rules.v6"
