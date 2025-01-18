@@ -555,6 +555,7 @@ Save_iptables(){
 	sudo iptables-save > /etc/iptables/rules.v4
 	sudo ip6tables-save > /etc/iptables/rules.v6
 }
+
 Set_iptables(){
 	echo -e "net.ipv4.ip_forward = 1" >> /etc/sysctl.conf
 	echo -e "net.ipv6.conf.all.forwarding = 1" >> /etc/sysctl.conf
