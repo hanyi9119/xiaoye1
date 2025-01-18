@@ -484,6 +484,22 @@ Add_iptables() {
 }
 
 Del_iptables() {
+    # 读取 ocserv 配置文件中的端口
+    local ocserv_config="/etc/ocserv/ocserv.conf"  # ocserv 配置文件路径
+    local set_tcp_port set_udp_port
+
+    # 从配置文件中提取 TCP 端口
+    set_tcp_port=$(grep -oP '^tcp-port\s*=\s*\K[0-9]+' "${ocserv_config}" 2>/dev/null)
+    if [[ -z "${set_tcp_port}" ]]; then
+        set_tcp_port=443  # 如果未找到，使用默认端口 443
+    fi
+
+    # 从配置文件中提取 UDP 端口
+    set_udp_port=$(grep -oP '^udp-port\s*=\s*\K[0-9]+' "${ocserv_config}" 2>/dev/null)
+    if [[ -z "${set_udp_port}" ]]; then
+        set_udp_port=443  # 如果未找到，使用默认端口 443
+    fi
+
     # 删除 IPv4 TCP 规则（如果存在）
     if iptables -C INPUT -p tcp --dport ${set_tcp_port} -j ACCEPT >/dev/null 2>&1; then
         iptables -D INPUT -p tcp --dport ${set_tcp_port} -j ACCEPT
