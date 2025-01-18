@@ -484,17 +484,25 @@ Add_iptables() {
 }
 
 Del_iptables() {
-    # 删除 IPv4 TCP 规则
-    iptables -D INPUT -p tcp --dport ${set_tcp_port} -j ACCEPT >/dev/null 2>&1
+    # 删除 IPv4 TCP 规则（如果存在）
+    if iptables -C INPUT -p tcp --dport ${set_tcp_port} -j ACCEPT >/dev/null 2>&1; then
+        iptables -D INPUT -p tcp --dport ${set_tcp_port} -j ACCEPT
+    fi
 
-    # 删除 IPv4 UDP 规则
-    iptables -D INPUT -p udp --dport ${set_udp_port} -j ACCEPT >/dev/null 2>&1
+    # 删除 IPv4 UDP 规则（如果存在）
+    if iptables -C INPUT -p udp --dport ${set_udp_port} -j ACCEPT >/dev/null 2>&1; then
+        iptables -D INPUT -p udp --dport ${set_udp_port} -j ACCEPT
+    fi
 
-    # 删除 IPv6 TCP 规则
-    ip6tables -D INPUT -p tcp --dport ${set_tcp_port} -j ACCEPT >/dev/null 2>&1
+    # 删除 IPv6 TCP 规则（如果存在）
+    if ip6tables -C INPUT -p tcp --dport ${set_tcp_port} -j ACCEPT >/dev/null 2>&1; then
+        ip6tables -D INPUT -p tcp --dport ${set_tcp_port} -j ACCEPT
+    fi
 
-    # 删除 IPv6 UDP 规则
-    ip6tables -D INPUT -p udp --dport ${set_udp_port} -j ACCEPT >/dev/null 2>&1
+    # 删除 IPv6 UDP 规则（如果存在）
+    if ip6tables -C INPUT -p udp --dport ${set_udp_port} -j ACCEPT >/dev/null 2>&1; then
+        ip6tables -D INPUT -p udp --dport ${set_udp_port} -j ACCEPT
+    fi
 }
 
 Save_iptables(){
