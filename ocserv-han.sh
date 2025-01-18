@@ -460,36 +460,43 @@ over(){
 	rm -f occtl.8
 	echo && echo "安装过程错误，ocserv 卸载完成 !" && echo
 }
-Add_iptables(){
 
-# 检查 TCP 规则是否存在，如果不存在则添加
-if ! iptables -C INPUT -p tcp --dport ${set_tcp_port} -m conntrack --ctstate NEW,ESTABLISHED -j ACCEPT >/dev/null 2>&1; then
-    iptables -I INPUT -p tcp --dport ${set_tcp_port} -m conntrack --ctstate NEW,ESTABLISHED -j ACCEPT
-fi
+Add_iptables() {
+    # 检查 TCP 规则是否存在，如果不存在则添加
+    if ! iptables -C INPUT -p tcp --dport ${set_tcp_port} -j ACCEPT >/dev/null 2>&1; then
+        iptables -A INPUT -p tcp --dport ${set_tcp_port} -j ACCEPT
+    fi
 
-# 检查 UDP 规则是否存在，如果不存在则添加
-if ! iptables -C INPUT -p udp --dport ${set_udp_port} -m conntrack --ctstate NEW,ESTABLISHED -j ACCEPT >/dev/null 2>&1; then
-    iptables -I INPUT -p udp --dport ${set_udp_port} -m conntrack --ctstate NEW,ESTABLISHED -j ACCEPT
-fi
+    # 检查 UDP 规则是否存在，如果不存在则添加
+    if ! iptables -C INPUT -p udp --dport ${set_udp_port} -j ACCEPT >/dev/null 2>&1; then
+        iptables -A INPUT -p udp --dport ${set_udp_port} -j ACCEPT
+    fi
 
-# 检查 IPv6 TCP 规则是否存在，如果不存在则添加
-if ! ip6tables -C INPUT -p tcp --dport ${set_tcp_port} -m conntrack --ctstate NEW,ESTABLISHED -j ACCEPT >/dev/null 2>&1; then
-    ip6tables -I INPUT -p tcp --dport ${set_tcp_port} -m conntrack --ctstate NEW,ESTABLISHED -j ACCEPT
-fi
+    # 检查 IPv6 TCP 规则是否存在，如果不存在则添加
+    if ! ip6tables -C INPUT -p tcp --dport ${set_tcp_port} -j ACCEPT >/dev/null 2>&1; then
+        ip6tables -A INPUT -p tcp --dport ${set_tcp_port} -j ACCEPT
+    fi
 
-# 检查 IPv6 UDP 规则是否存在，如果不存在则添加
-if ! ip6tables -C INPUT -p udp --dport ${set_udp_port} -m conntrack --ctstate NEW,ESTABLISHED -j ACCEPT >/dev/null 2>&1; then
-    ip6tables -I INPUT -p udp --dport ${set_udp_port} -m conntrack --ctstate NEW,ESTABLISHED -j ACCEPT
-fi
-
+    # 检查 IPv6 UDP 规则是否存在，如果不存在则添加
+    if ! ip6tables -C INPUT -p udp --dport ${set_udp_port} -j ACCEPT >/dev/null 2>&1; then
+        ip6tables -A INPUT -p udp --dport ${set_udp_port} -j ACCEPT
+    fi
 }
-Del_iptables(){
- 	iptables -D INPUT -p tcp --dport ${tcp_port} -m conntrack --ctstate NEW,ESTABLISHED -j ACCEPT
- 	iptables -D INPUT -p udp --dport ${udp_port} -m conntrack --ctstate NEW,ESTABLISHED -j ACCEPT
- 	ip6tables -D INPUT -p tcp --dport ${tcp_port} -m conntrack --ctstate NEW,ESTABLISHED -j ACCEPT
-	ip6tables -D INPUT -p udp --dport ${udp_port} -m conntrack --ctstate NEW,ESTABLISHED -j ACCEPT
- 
+
+Del_iptables() {
+    # 删除 IPv4 TCP 规则
+    iptables -D INPUT -p tcp --dport ${set_tcp_port} -j ACCEPT >/dev/null 2>&1
+
+    # 删除 IPv4 UDP 规则
+    iptables -D INPUT -p udp --dport ${set_udp_port} -j ACCEPT >/dev/null 2>&1
+
+    # 删除 IPv6 TCP 规则
+    ip6tables -D INPUT -p tcp --dport ${set_tcp_port} -j ACCEPT >/dev/null 2>&1
+
+    # 删除 IPv6 UDP 规则
+    ip6tables -D INPUT -p udp --dport ${set_udp_port} -j ACCEPT >/dev/null 2>&1
 }
+
 Save_iptables(){
 	sudo iptables-save > /etc/iptables/rules.v4
 	sudo ip6tables-save > /etc/iptables/rules.v6
