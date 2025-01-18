@@ -566,32 +566,18 @@ Set_iptables(){
     sysctl -p
 
     # 自动获取公网通讯的网卡名称
-    Network_card=$(ip route | grep default | awk '{print $5}')
-    if [[ -z ${Network_card} ]]; then
-        echo -e "${Error} 无法自动获取网卡名，请手动输入！"
-        stty erase '^H' && read -p "请手动输入你的网卡名(一般为 eth0，OpenVZ则为 venet0):" Network_card
-        [[ -z "${Network_card}" ]] && echo "取消..." && exit 1
-    fi
+    Network_card=$(ip route get 8.8.8.8 | awk '{print $5; exit}')
 
-    # 以下逻辑保持不变
-    ifconfig_status=$(ifconfig)
-    if [[ -z ${ifconfig_status} ]]; then
-        echo -e "${Error} ifconfig 未安装 !"
-        stty erase '^H' && read -p "请手动输入你的网卡名(一般为 eth0，OpenVZ则为 venet0):" Network_card
-        [[ -z "${Network_card}" ]] && echo "取消..." && exit 1
-    else
-        Network_card=$(ifconfig|grep "eth0")
-        if [[ ! -z ${Network_card} ]]; then
-            Network_card="eth0"
+    if [[ -z ${Network_card} ]]; then
+        echo -e "${Error} 无法自动获取网卡名 !"
+        ifconfig_status=$(ifconfig)
+        if [[ -z ${ifconfig_status} ]]; then
+            stty erase '^H' && read -p "请手动输入你的网卡名(一般为 eth0，OpenVZ则为 venet0):" Network_card
+            [[ -z "${Network_card}" ]] && echo "取消..." && exit 1
         else
-            Network_card=$(ifconfig|grep "venet0")
-            if [[ ! -z ${Network_card} ]]; then
-                Network_card="venet0"
-            else
-                ifconfig
-                stty erase '^H' && read -p "检测到本服务器的网卡非 eth0 和 venet0 请根据上面输出的网卡信息手动输入你的网卡名:" Network_card
-                [[ -z "${Network_card}" ]] && echo "取消..." && exit 1
-            fi
+            ifconfig
+            stty erase '^H' && read -p "检测到本服务器的网卡非 eth0 和 venet0 请根据上面输出的网卡信息手动输入你的网卡名:" Network_card
+            [[ -z "${Network_card}" ]] && echo "取消..." && exit 1
         fi
     fi
 
