@@ -519,7 +519,29 @@ Del_iptables() {
     if ip6tables -C INPUT -p udp --dport ${set_udp_port} -j ACCEPT >/dev/null 2>&1; then
         ip6tables -D INPUT -p udp --dport ${set_udp_port} -j ACCEPT
     fi
-    
+
+    # 定义规则文件路径
+    RULES_V4="/etc/iptables/rules.v4"
+    RULES_V6="/etc/iptables/rules.v6"
+
+    # 获取网卡名称
+    INTERFACE=$(ip link show | awk -F': ' '/state UP/ {print $2}')
+
+    # 删除 /etc/iptables/rules.v4 中的重复规则
+    if [ -f "$RULES_V4" ]; then
+        sed -i "/-A POSTROUTING -o $INTERFACE -j MASQUERADE/d" "$RULES_V4"
+        echo "-A POSTROUTING -o $INTERFACE -j MASQUERADE" >> "$RULES_V4"
+    fi
+
+    # 删除 /etc/iptables/rules.v6 中的重复规则
+    if [ -f "$RULES_V6" ]; then
+        sed -i "/-A POSTROUTING -o $INTERFACE -j MASQUERADE/d" "$RULES_V6"
+        echo "-A POSTROUTING -o $INTERFACE -j MASQUERADE" >> "$RULES_V6"
+    fi
+
+    # 重新加载规则
+    sudo netfilter-persistent reload
+
     # 删除 /etc/sysctl.conf 中的 IPv4 和 IPv6 转发配置
     sed -i '/^net.ipv4.ip_forward = 1$/d' /etc/sysctl.conf
     sed -i '/^net.ipv6.conf.all.forwarding = 1$/d' /etc/sysctl.conf
