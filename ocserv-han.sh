@@ -519,6 +519,14 @@ Del_iptables() {
     if ip6tables -C INPUT -p udp --dport ${set_udp_port} -j ACCEPT >/dev/null 2>&1; then
         ip6tables -D INPUT -p udp --dport ${set_udp_port} -j ACCEPT
     fi
+
+    # 删除 /etc/sysctl.conf 中的 IPv4 和 IPv6 转发配置
+    sed -i '/^net.ipv4.ip_forward = 1$/d' /etc/sysctl.conf
+    sed -i '/^net.ipv6.conf.all.forwarding = 1$/d' /etc/sysctl.conf
+
+    # 重新加载 sysctl 配置
+    sysctl -p
+
 }
 
 Save_iptables(){
