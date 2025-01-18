@@ -527,16 +527,16 @@ Del_iptables() {
     # 获取网卡名称
     INTERFACE=$(ip link show | awk -F': ' '/state UP/ {print $2}')
 
-    # 删除 /etc/iptables/rules.v4 中的重复规则
+    # 删除 /etc/iptables/rules.v4 中所有符合条件的规则
     if [ -f "$RULES_V4" ]; then
+        # 删除所有匹配的规则
         sed -i "/-A POSTROUTING -o $INTERFACE -j MASQUERADE/d" "$RULES_V4"
-        echo "-A POSTROUTING -o $INTERFACE -j MASQUERADE" >> "$RULES_V4"
     fi
 
-    # 删除 /etc/iptables/rules.v6 中的重复规则
+    # 删除 /etc/iptables/rules.v6 中所有符合条件的规则
     if [ -f "$RULES_V6" ]; then
+        # 删除所有匹配的规则
         sed -i "/-A POSTROUTING -o $INTERFACE -j MASQUERADE/d" "$RULES_V6"
-        echo "-A POSTROUTING -o $INTERFACE -j MASQUERADE" >> "$RULES_V6"
     fi
 
     # 重新加载规则
