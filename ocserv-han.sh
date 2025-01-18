@@ -520,10 +520,6 @@ Del_iptables() {
         ip6tables -D INPUT -p udp --dport ${set_udp_port} -j ACCEPT
     fi
     
-    # 保存当前规则
-    sudo iptables-save > /etc/iptables/rules.v4
-    sudo ip6tables-save > /etc/iptables/rules.v6
-    
     # 删除 /etc/sysctl.conf 中的 IPv4 和 IPv6 转发配置
     sed -i '/^net.ipv4.ip_forward = 1$/d' /etc/sysctl.conf
     sed -i '/^net.ipv6.conf.all.forwarding = 1$/d' /etc/sysctl.conf
