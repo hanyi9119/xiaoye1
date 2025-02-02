@@ -35,7 +35,7 @@ create_swap() {
 
 # 设置 vm.swappiness 值为60
 set_swappiness() {
-    TARGET_SWAPPINESS=60
+    TARGET_SWAPPINESS=10
     SYSCTL_CONF="/etc/sysctl.conf"
 
     # 检查 /etc/sysctl.conf 中的 vm.swappiness 设置
