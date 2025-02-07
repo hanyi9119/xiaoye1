@@ -37,35 +37,28 @@ create_swap() {
 set_swappiness() {
     local TARGET_SWAPPINESS=10
     local SYSCTL_CONF="/etc/sysctl.conf"
-    local TEMP_CONF="/tmp/sysctl_temp.conf"
+    local BACKUP_CONF="${SYSCTL_CONF}.bak"
 
     # 备份原始配置文件
-    cp "$SYSCTL_CONF" "${SYSCTL_CONF}.bak"
+    cp -f "$SYSCTL_CONF" "$BACKUP_CONF"
 
-    # 处理现有vm.swappiness配置
-    if grep -q "^[[:space:]]*vm.swappiness[[:space:]]*=" "$SYSCTL_CONF"; then
-        # 注释所有现有配置
-        sed -i '/^[[:space:]]*vm.swappiness[[:space:]]*=/s/^/# /' "$SYSCTL_CONF"
-    fi
+    # 注释所有现有的vm.swappiness配置（避免冲突）
+    sed -i '/^[[:space:]]*vm.swappiness[[:space:]]*=/s/^/# /' "$SYSCTL_CONF"
 
-    # 追加新的配置到文件末尾
+    # 追加新配置到文件末尾
     echo "vm.swappiness=$TARGET_SWAPPINESS" >> "$SYSCTL_CONF"
 
-    # 验证配置文件语法
-    if sysctl -p "$SYSCTL_CONF" >/dev/null 2>&1; then
-        # 语法正确，应用配置
-        sysctl -p "$SYSCTL_CONF" >/dev/null
+    # 验证配置并应用
+    if sysctl -p "$SYSCTL_CONF" &>/dev/null; then
         echo "vm.swappiness 已成功设置为10"
         echo "当前值: $(cat /proc/sys/vm/swappiness)"
     else
         # 恢复备份并报错
-        mv "${SYSCTL_CONF}.bak" "$SYSCTL_CONF"
-        echo "错误: sysctl配置文件存在语法错误，已恢复原始配置" >&2
+        mv -f "$BACKUP_CONF" "$SYSCTL_CONF"
+        echo "错误: 配置文件存在其他语法错误，已还原原始配置" >&2
         exit 1
     fi
 }
-
-
 
 
 
