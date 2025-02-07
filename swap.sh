@@ -35,28 +35,25 @@ create_swap() {
 
 # 设置 vm.swappiness 值为10
 set_swappiness() {
-    TARGET_SWAPPINESS = 60
-    SYSCTL_CONF="/etc/sysctl.conf"
+    local TARGET_SWAPPINESS=10
+    local SYSCTL_CONF="/etc/sysctl.conf"
 
-    # 检查 /etc/sysctl.conf 中的 vm.swappiness 设置
-    if grep -q "^vm.swappiness" "$SYSCTL_CONF"; then
-        # 如果存在 vm.swappiness 设置，检查其值
-        CURRENT_SWAPPINESS=$(grep "^vm.swappiness" "$SYSCTL_CONF" | awk -F= '{print $2}' | tr -d ' ')
-        if [ "$CURRENT_SWAPPINESS" -ne "$TARGET_SWAPPINESS" ]; then
-            # 如果不等于目标值，修改为目标值
-            sudo sed -i "s/^vm.swappiness=.*/vm.swappiness=$TARGET_SWAPPINESS/" "$SYSCTL_CONF"
-        fi
+    # 检查是否存在vm.swappiness设置
+    if grep -q "^[[:space:]]*vm.swappiness[[:space:]]*=" "$SYSCTL_CONF"; then
+        # 存在则替换（支持带空格的配置）
+        sed -i "s/^[[:space:]]*vm.swappiness[[:space:]]*=.*/vm.swappiness=$TARGET_SWAPPINESS/" "$SYSCTL_CONF"
     else
-        # 如果没有设置，添加目标值
-        echo "vm.swappiness=$TARGET_SWAPPINESS" | sudo tee -a "$SYSCTL_CONF" > /dev/null
+        # 不存在则追加
+        echo "vm.swappiness=$TARGET_SWAPPINESS" >> "$SYSCTL_CONF"
     fi
 
-    # 立即应用更改，并检查是否成功
-    if sudo sysctl -p > /dev/null 2>&1; then
-        echo "vm.swappiness值设置完成："
-        echo "vm.swappiness = $(cat /proc/sys/vm/swappiness)"
+    # 应用配置并验证
+    if sysctl -p &>/dev/null; then
+        echo "vm.swappiness 已成功设置为10"
+        echo "当前值: $(cat /proc/sys/vm/swappiness)"
     else
-        echo "应用 vm.swappiness 设置时出错。"
+        echo "错误: 无法应用sysctl配置" >&2
+        exit 1
     fi
 }
 
