@@ -600,8 +600,11 @@ Set_iptables(){
     sudo chmod 600 /etc/iptables/rules.v4 /etc/iptables/rules.v6
 
     # 安装 iptables-persistent
+    # 设置自动保存 IPv4 和 IPv6 规则的选项为 "Yes"
+    echo "iptables-persistent iptables-persistent/autosave_v4 boolean true" | sudo debconf-set-selections
+    echo "iptables-persistent iptables-persistent/autosave_v6 boolean true" | sudo debconf-set-selections
     sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -q iptables-persistent
-
+    
     # 启用 netfilter-persistent 服务
     sudo systemctl enable netfilter-persistent
 
