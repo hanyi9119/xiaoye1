@@ -35,25 +35,43 @@ create_swap() {
 
 # 设置 vm.swappiness 值为10
 set_swappiness() {
-    TARGET_SWAPPINESS=10  # 将此处从60改为10
+    TARGET_SWAPPINESS=10
     SYSCTL_CONF="/etc/sysctl.conf"
 
-    if grep -q "^vm.swappiness" "$SYSCTL_CONF"; then
-        CURRENT_SWAPPINESS=$(grep "^vm.swappiness" "$SYSCTL_CONF" | awk -F= '{print $2}' | tr -d ' ')
+    # 显示当前运行时值
+    echo -n "当前运行时swappiness值: "
+    cat /proc/sys/vm/swappiness
+
+    # 使用正则表达式匹配各种格式的配置行
+    if grep -qE "^[[:space:]]*vm.swappiness[[:space:]]*=" "$SYSCTL_CONF"; then
+        # 提取并标准化值（去除所有空格）
+        CURRENT_SWAPPINESS=$(grep -E "^[[:space:]]*vm.swappiness[[:space:]]*=" "$SYSCTL_CONF" | 
+                           awk -F= '{print $2}' | 
+                           tr -d '[:space:]')
+
         if [ "$CURRENT_SWAPPINESS" -ne "$TARGET_SWAPPINESS" ]; then
-            sudo sed -i "s/^vm.swappiness=.*/vm.swappiness=$TARGET_SWAPPINESS/" "$SYSCTL_CONF"
+            # 使用更灵活的正则表达式进行替换
+            sudo sed -i -E "s/^([[:space:]]*vm.swappiness[[:space:]]*=)[[:space:]]*[0-9]+/\1${TARGET_SWAPPINESS}/" "$SYSCTL_CONF"
+            echo "配置修改：vm.swappiness ${CURRENT_SWAPPINESS} → ${TARGET_SWAPPINESS}"
+        else
+            echo "当前配置已是最佳值，无需修改"
         fi
     else
-        echo "vm.swappiness=$TARGET_SWAPPINESS" | sudo tee -a "$SYSCTL_CONF" > /dev/null
+        # 添加标准化格式的配置项
+        echo "vm.swappiness=${TARGET_SWAPPINESS}" | sudo tee -a "$SYSCTL_CONF" > /dev/null
+        echo "新增swappiness配置项"
     fi
 
+    # 应用配置
     if sudo sysctl -p > /dev/null 2>&1; then
-        echo "vm.swappiness值设置完成："
-        echo "vm.swappiness = $(cat /proc/sys/vm/swappiness)"
+        echo -e "应用后实时值: \033[32m$(sysctl -n vm.swappiness)\033[0m"
     else
-        echo "应用 vm.swappiness 设置时出错。"
+        echo -e "\033[31m错误：配置应用失败\033[0m"
+        exit 1
     fi
 }
+
+
 
 
 
