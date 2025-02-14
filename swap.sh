@@ -51,13 +51,19 @@ set_swappiness() {
         echo "vm.swappiness=$TARGET_SWAPPINESS" | sudo tee -a "$SYSCTL_CONF" > /dev/null
     fi
 
-    # 立即应用更改，并检查是否成功
-    if sudo sysctl -p > /dev/null 2> /tmp/sysctl_error.log; then
+
+    # 立即应用更改，并检查 vm.swappiness 是否设置成功
+    sudo sysctl -p > /dev/null 2>&1
+
+    # 获取当前的 vm.swappiness 值
+    current_swappiness=$(sysctl vm.swappiness | awk '{print $3}')
+
+    # 检查当前值是否与目标值一致
+    if [ "$current_swappiness" -eq "$TARGET_SWAPPINESS" ]; then
         echo "vm.swappiness值设置完成："
-        echo "vm.swappiness = $(cat /proc/sys/vm/swappiness)"
+        echo "vm.swappiness = $current_swappiness"
     else
-        echo "应用 vm.swappiness 设置时出错。"
-        echo "错误详情已保存到 /tmp/sysctl_error.log"
+        echo "vm.swappiness 设置失败，当前值为 $current_swappiness，目标值为 $TARGET_SWAPPINESS。"
     fi
 }
 
