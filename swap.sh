@@ -52,11 +52,12 @@ set_swappiness() {
     fi
 
     # 立即应用更改，并检查是否成功
-    if sudo sysctl -p > /dev/null 2>&1; then
+    if sudo sysctl -p > /dev/null 2> /tmp/sysctl_error.log; then
         echo "vm.swappiness值设置完成："
         echo "vm.swappiness = $(cat /proc/sys/vm/swappiness)"
     else
         echo "应用 vm.swappiness 设置时出错。"
+        echo "错误详情已保存到 /tmp/sysctl_error.log"
     fi
 }
 
